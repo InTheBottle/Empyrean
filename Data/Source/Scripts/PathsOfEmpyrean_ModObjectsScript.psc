@@ -78,8 +78,10 @@ MagicEffect property PoE_MGEF_SMITH_SpawnDwarvenAutomaton_Upgrade_start auto
 MagicEffect property PoE_MGEF_SMITH_SpawnDwarvenAutomaton_Upgrade_end auto
 MagicEffect property PoE_MGEF_SMITH_SpawnDwarvenAutomaton_Upgrade_spacer auto
 
-Perk property PerkReduceBashStaminaCost auto
-Perk property PerkBashReflectSpell auto
+Perk property PerkSkirmishersTarge auto
+Perk property PerkMirrorWall auto
+Perk property PerkRebound auto
 Keyword property KeywordShieldLight auto
 Spell property SpellVFXBashReflectSpell auto
-Perk property PerkRebound auto
+Perk property DeflectArrows auto
+Spell property SpellVFXDestroyArrow auto

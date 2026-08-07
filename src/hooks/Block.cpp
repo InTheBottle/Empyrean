@@ -16,22 +16,41 @@ namespace Hooks
 			auto& trampoline = SKSE::GetTrampoline();
 			REL::Relocation<std::uintptr_t> hook{ REL::ID(38603), 0x171 };
 			_getAttackStaminaCost = trampoline.write_call<5>(hook.address(), &GetAttackStaminaCost);
+			logger::info("    > Installed hook for SkirmishersTarge"sv);
 		}
 
 		auto enableBashSpellReflection = Settings::INI::GetSetting<bool>(Settings::INI::ENABLE_BASH_SPELL_REFLECTION).value_or(false);
 		if (enableBashSpellReflection)
 		{
-			_parryAngle = RE::GameSettingCollection::GetSingleton()->GetSetting("fCombatHitConeAngle")->GetFloat();
-			_skillXPReflectSpell = Settings::INI::GetSetting<float>(Settings::INI::SKILL_XP_BLOCK_REFLECT_SPELL).value_or(0.0);
-
 			REL::Relocation<std::uintptr_t> missileProjectileVtbl{ RE::VTABLE_MissileProjectile[0] };
 			_missileCollision = missileProjectileVtbl.write_vfunc(190, OnMissileCollision);
+			logger::info("    > Installed hook for MirrorWall"sv);
+		}
 
+		auto enableBashDestroyArrow = Settings::INI::GetSetting<bool>(Settings::INI::ENABLE_BASH_DESTROY_ARROW).value_or(false);
+		if (enableBashDestroyArrow)
+		{
 			REL::Relocation<std::uintptr_t> arrowProjectileVtbl{ RE::VTABLE_ArrowProjectile[0] };
 			_arrowCollision = arrowProjectileVtbl.write_vfunc(190, OnArrowCollision);
+			logger::info("    > Installed hook for ReflectArrows"sv);
 		}
 		
 		return true;
+	}
+
+	void Block::LoadData()
+	{
+		_parryAngle = RE::GameSettingCollection::GetSingleton()->GetSetting("fCombatHitConeAngle")->GetFloat();
+		_skillXPReflectSpell = Settings::INI::GetSetting<float>(Settings::INI::SKILL_XP_BLOCK_REFLECT_SPELL).value_or(0.0);
+		_skillXPDestroyArrow = Settings::INI::GetSetting<float>(Settings::INI::SKILL_XP_BLOCK_DESTROY_ARROW).value_or(0.0);
+
+		perkMirrorWall = Data::ModObject<RE::BGSPerk>("PerkMirrorWall"sv);
+		perkRebound = Data::ModObject<RE::BGSPerk>("PerkRebound"sv);
+		perkDeflectArrows = Data::ModObject<RE::BGSPerk>("DeflectArrows"sv);
+		perkSkirmishersTarge = Data::ModObject<RE::BGSPerk>("PerkSkirmishersTarge"sv);
+
+		spellBashReflectSpellVFX = Data::ModObject<RE::SpellItem>("SpellVFXBashReflectSpell"sv);
+		spellDestroyArrowVFX = Data::ModObject<RE::SpellItem>("SpellVFXDestroyArrow"sv);
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -54,7 +73,6 @@ namespace Hooks
 		if (!RE::Offset::getEquippedShield(victim))
 			return;
 
-		const auto perkRebound = Data::ModObject<RE::BGSPerk>("PerkRebound"sv);
 		if (!victim->HasPerk(perkRebound)) return;
 
 		//logger::info("Rebound: physicalDamage={}, totalDamage={} ", a_hitData->physicalDamage, a_hitData->totalDamage);
@@ -68,9 +86,8 @@ namespace Hooks
 			//logger::info("Bash attack!");
 
 			const auto* a_actor = skyrim_cast<const RE::Actor*>(avOwner);
-			const auto perk = Data::ModObject<RE::BGSPerk>("PerkReduceBashStaminaCost"sv);
 
-			if (perk && a_actor && a_actor->HasPerk(perk) && Utils::ArmorUtils::HasEquippedLightShield(a_actor)) {
+			if (a_actor && a_actor->HasPerk(perkSkirmishersTarge) && Utils::ArmorUtils::HasEquippedLightShield(a_actor)) {
 				float baseStamina = _getAttackStaminaCost(avOwner, atkData);
 				//logger::info(" > Base stamina cost = {}, New stamina cost = {}", baseStamina, baseStamina / 2.0);
 				return baseStamina / 2.0;
@@ -81,27 +98,70 @@ namespace Hooks
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
-	void Block::OnMissileCollision(RE::Projectile* a_this, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
-	{
-		//logger::info("Missile collision!");
-		if (shouldIgnoreHit(a_this, a_AllCdPointCollector)) {
-			return;
-		};
-		_missileCollision(a_this, a_AllCdPointCollector);
-	}
-
 	void Block::OnArrowCollision(RE::Projectile* a_this, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
 	{
-		if (shouldIgnoreHit(a_this, a_AllCdPointCollector)) {
+		//logger::info("Arrow collision!");
+		if (TryBashDestroyArrow(a_this, a_AllCdPointCollector)) {
 			return;
 		};
 		_arrowCollision(a_this, a_AllCdPointCollector);
 	}
 
-	bool Block::shouldIgnoreHit(RE::Projectile* a_projectile, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
+	bool Block::TryBashDestroyArrow(RE::Projectile* a_projectile, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
 	{
 		if (a_AllCdPointCollector && a_projectile) {
-			const auto perk = Data::ModObject<RE::BGSPerk>("PerkBashReflectSpell"sv);
+			
+			for (auto& hit : a_AllCdPointCollector->hits) {
+				auto refrA = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableA);
+				auto refrB = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableB);
+				auto actorA = refrA->As<RE::Actor>();
+				auto actorB = refrB->As<RE::Actor>();
+
+				if (DoTryBashDestroyArrow(actorA, a_projectile))
+					return true;
+
+				if (DoTryBashDestroyArrow(actorB, a_projectile))
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool Block::DoTryBashDestroyArrow(RE::Actor* a_actor, RE::Projectile* a_projectile)
+	{
+		if (!a_actor) return false;
+
+		if (a_actor && (a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash ||
+			a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kSwing ||
+			a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kHit ||
+			a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kFollowThrough)) {
+			//logger::info("  > In bash/attack state...");
+			if (a_actor->IsPlayerRef() && a_actor->HasPerk(perkDeflectArrows) && !RE::Offset::getEquippedShield(a_actor)) {
+				//logger::info("  > Trying to destroy arrow...");
+				RE::Offset::destroyProjectile(a_projectile);
+				a_actor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)->CastSpellImmediate(spellDestroyArrowVFX, false, a_actor->As<RE::Actor>(), 1.0f, false, 0.0f, a_actor->As<RE::Actor>());
+				RE::PlayerCharacter::GetSingleton()->AddSkillExperience(RE::ActorValue::kBlock, _skillXPDestroyArrow);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	void Block::OnMissileCollision(RE::Projectile* a_this, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
+	{
+		//logger::info("Missile collision!");
+		if (TryBashReflectSpell(a_this, a_AllCdPointCollector)) {
+			return;
+		};
+		_missileCollision(a_this, a_AllCdPointCollector);
+	}
+
+	bool Block::TryBashReflectSpell(RE::Projectile* a_projectile, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
+	{
+		if (a_AllCdPointCollector && a_projectile) {
 
 			for (auto& hit : a_AllCdPointCollector->hits) {
 				auto refrA = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableA);
@@ -110,7 +170,7 @@ namespace Hooks
 				auto actorB = refrB->As<RE::Actor>();
 
 				if (refrA && refrA->formType == RE::FormType::ActorCharacter && actorA->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
-					if (refrA->IsPlayerRef() && actorA->HasPerk(perk) && Utils::ArmorUtils::HasEquippedLightShield(actorA)) {
+					if (refrA->IsPlayerRef() && actorA->HasPerk(perkMirrorWall) && Utils::ArmorUtils::HasEquippedLightShield(actorA)) {
 						if (a_projectile->spell) {
 							//logger::info(" > A: Trying to parry projectile...");
 							return processProjectileParry(refrA->As<RE::Actor>(), a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableB));
@@ -118,7 +178,7 @@ namespace Hooks
 					}
 				}
 				if (refrB && refrB->formType == RE::FormType::ActorCharacter && actorB->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
-					if (refrB->IsPlayerRef() && actorB->HasPerk(perk) && Utils::ArmorUtils::HasEquippedLightShield(actorB)) {
+					if (refrB->IsPlayerRef() && actorB->HasPerk(perkMirrorWall) && Utils::ArmorUtils::HasEquippedLightShield(actorB)) {
 						if (a_projectile->spell) {
 							//logger::info(" > B: Trying to parry projectile...");
 							return processProjectileParry(refrB->As<RE::Actor>(), a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableA));
@@ -152,8 +212,7 @@ namespace Hooks
 				ReflectProjectile(a_projectile);
 			}
 
-			const auto sp = Data::ModObject<RE::SpellItem>("SpellVFXBashReflectSpell"sv);
-			a_parrier->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)->CastSpellImmediate(sp, false, a_parrier->As<RE::Actor>(), 1.0f, false, 0.0f, a_parrier->As<RE::Actor>());
+			a_parrier->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)->CastSpellImmediate(spellBashReflectSpellVFX, false, a_parrier->As<RE::Actor>(), 1.0f, false, 0.0f, a_parrier->As<RE::Actor>());
 
 			if (a_parrier->IsPlayerRef()) {
 				RE::PlayerCharacter::GetSingleton()->AddSkillExperience(RE::ActorValue::kBlock, _skillXPReflectSpell);

@@ -29,4 +29,7 @@ namespace RE::Offset
 
 	typedef RE::TESObjectREFR* (_fastcall* _getEquippedShield)(RE::Actor* a_actor);
 	inline static REL::Relocation<_getEquippedShield> getEquippedShield{ RELOCATION_ID(37624, 38577) };
+
+	typedef void(_fastcall* _destroyProjectile)(RE::Projectile* a_projectile);
+	inline static REL::Relocation<_destroyProjectile> destroyProjectile{ RELOCATION_ID(42930, 44110) };
 }

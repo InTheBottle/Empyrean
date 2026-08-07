@@ -8,6 +8,7 @@
 #include "Settings/JSON/JSONSettings.h"
 #include "Hooks/Destruction.h"
 #include "Hooks/Smithing.h"
+#include "hooks/Block.h"
 
 static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 {
@@ -23,6 +24,7 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 		//Hooks::Destruction::LoadData();
 		//Hooks::ProcessSpellsForPatching();
 		Hooks::Smithing::LoadData();
+		Hooks::Block::LoadData();
 
 		SECTION_SEPARATOR;
 		logger::info("Finished startup tasks, enjoy your game!"sv);
