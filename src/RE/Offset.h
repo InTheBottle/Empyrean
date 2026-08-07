@@ -26,4 +26,7 @@ namespace RE::Offset
 
 	constexpr auto HandleWeaponSpeedChannel = REL::ID(42779);
 	constexpr auto HandleLeftWeaponSpeedChannel = REL::ID(42780);
+
+	typedef RE::TESObjectREFR* (_fastcall* _getEquippedShield)(RE::Actor* a_actor);
+	inline static REL::Relocation<_getEquippedShield> getEquippedShield{ RELOCATION_ID(37624, 38577) };
 }

@@ -55,8 +55,11 @@ namespace Settings
 		inline static constexpr const char* ENABLE_HEAVYARMOR_XP_FROM_UNARMED = "Unarmed|bGetHeavyArmorXPFromUnarmedAttacks";
 		inline static constexpr const char* SKILL_XP_FROM_UNARMED_MULT = "Unarmed|fSkillXPFromUnarmedMult";
 		inline static constexpr const char* ENABLE_UNARMED_SPEED_FIX = "Unarmed|bEnableUnarmedWeapSpeedMultFix";
+		inline static constexpr const char* ENABLE_BASH_STAMINA_REDUCTION = "Block|bEnableBashStaminaReduction";
+		inline static constexpr const char* ENABLE_BASH_SPELL_REFLECTION = "Block|bEnableBashSpellReflection";
+		inline static constexpr const char* SKILL_XP_BLOCK_REFLECT_SPELL = "Block|fSkillXPBlockReflectSpell";
 
-		inline static constexpr const std::uint8_t EXPECTED_COUNT = 9;
+		inline static constexpr const std::uint8_t EXPECTED_COUNT = 12;
 
 		inline static constexpr const std::array<const char*, EXPECTED_COUNT> EXPECTED_SETTINGS = {
 			ENABLE_LIGHTARMOR_PASSIVE_XP,
@@ -67,7 +70,10 @@ namespace Settings
 			ENABLE_LIGHTARMOR_XP_FROM_UNARMED,
 			ENABLE_HEAVYARMOR_XP_FROM_UNARMED,
 			SKILL_XP_FROM_UNARMED_MULT,
-			ENABLE_UNARMED_SPEED_FIX
+			ENABLE_UNARMED_SPEED_FIX,
+			ENABLE_BASH_STAMINA_REDUCTION,
+			ENABLE_BASH_SPELL_REFLECTION,
+			SKILL_XP_BLOCK_REFLECT_SPELL
 		};
 
 		template <typename T>

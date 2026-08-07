@@ -7,6 +7,7 @@
 #include "OneHanded.h"
 #include "TwoHanded.h"
 #include "Destruction.h"
+#include "Block.h"
 
 #include "RE/Offset.h"
 #include <xbyak/xbyak.h>
@@ -30,6 +31,7 @@ namespace Hooks {
 		result &= Unarmed::InstallHooks();
 		result &= Pickpocket::InstallHooks();
 		result &= Alteration::InstallHooks();
+		result &= Block::InstallHooks();
 
 		logger::info("Finished installing hooks."sv);
 		return result;
@@ -61,6 +63,7 @@ namespace Hooks {
 		Unarmed::ProcessCombatHit(a_this, a_hitData);
 		OneHanded::ProcessCombatHit(a_this, a_hitData);
 		TwoHanded::ProcessCombatHit(a_this, a_hitData);
+		Block::ProcessCombatHit(a_this, a_hitData);
 	}
 
 	/*

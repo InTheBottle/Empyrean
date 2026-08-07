@@ -12,3 +12,5 @@ function UpdateRacesAllowPickpocket() global native
 armor[] function GetAllEquippedArmor(Actor a_actor) global native
 
 bool function CreateStasisCubeFromAutomaton(Actor automaton) global native
+
+;function AddAllEnchantedItemsWithKeywordToListAndRemoveEnch(ObjectReference inventoryObjRef, Formlist list, Keyword enchKeyword) global native

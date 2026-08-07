@@ -124,4 +124,23 @@ namespace Utils
 		}
 		return false;
 	}
+
+	bool ArmorUtils::HasEquippedLightShield(const RE::Actor* a_actor)
+	{
+		if (!a_actor) return false;
+
+		const auto armorList = GetEquippedArmor(a_actor);
+		if (armorList.empty()) return false;
+
+		const auto kArmorLightShield = Data::ModObject<RE::BGSKeyword>("KeywordShieldLight"sv);
+
+		for (const auto& armor : armorList)
+		{
+			if (armor->HasKeyword(kArmorLightShield))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }
