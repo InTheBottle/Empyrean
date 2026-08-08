@@ -109,19 +109,25 @@ namespace Hooks
 
 	bool Block::TryBashDestroyArrow(RE::Projectile* a_projectile, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
 	{
-		if (a_AllCdPointCollector && a_projectile) {
-			
-			for (auto& hit : a_AllCdPointCollector->hits) {
-				auto refrA = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableA);
-				auto refrB = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableB);
-				auto actorA = refrA->As<RE::Actor>();
-				auto actorB = refrB->As<RE::Actor>();
+		if (!a_AllCdPointCollector || !a_projectile) return false;
+		
+		for (auto& hit : a_AllCdPointCollector->hits) {
+			auto refrA = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableA);
+			auto refrB = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableB);
 
-				if (DoTryBashDestroyArrow(actorA, a_projectile))
+			if (refrA && refrA->formType == RE::FormType::ActorCharacter)
+			{
+				auto* actorA = refrA->As<RE::Actor>();
+				if (actorA && DoTryBashDestroyArrow(actorA, a_projectile)) {
 					return true;
-
-				if (DoTryBashDestroyArrow(actorB, a_projectile))
+				}
+			}
+			if (refrB && refrB->formType == RE::FormType::ActorCharacter)
+			{
+				auto* actorB = refrB->As<RE::Actor>();
+				if (actorB && DoTryBashDestroyArrow(actorB, a_projectile)) {
 					return true;
+				}
 			}
 		}
 
@@ -161,33 +167,36 @@ namespace Hooks
 
 	bool Block::TryBashReflectSpell(RE::Projectile* a_projectile, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
 	{
-		if (a_AllCdPointCollector && a_projectile) {
+		if (!a_AllCdPointCollector || !a_projectile) return false;
+		if (!a_projectile->spell) return false;
 
-			for (auto& hit : a_AllCdPointCollector->hits) {
-				auto refrA = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableA);
-				auto refrB = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableB);
-				auto actorA = refrA->As<RE::Actor>();
-				auto actorB = refrB->As<RE::Actor>();
+		for (auto& hit : a_AllCdPointCollector->hits) {
+			auto refrA = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableA);
+			auto refrB = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableB);
 
-				if (refrA && refrA->formType == RE::FormType::ActorCharacter && actorA->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
+			if (refrA && refrA->formType == RE::FormType::ActorCharacter)
+			{
+				auto* actorA = refrA->As<RE::Actor>();
+				if (actorA && actorA->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
 					if (refrA->IsPlayerRef() && actorA->HasPerk(perkMirrorWall) && Utils::ArmorUtils::HasEquippedLightShield(actorA)) {
-						if (a_projectile->spell) {
-							//logger::info(" > A: Trying to parry projectile...");
-							return processProjectileParry(refrA->As<RE::Actor>(), a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableB));
-						}
+						//logger::info(" > A: Trying to parry projectile...");
+						return processProjectileParry(actorA, a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableB));
 					}
 				}
-				if (refrB && refrB->formType == RE::FormType::ActorCharacter && actorB->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
+			}
+
+			if (refrB && refrB->formType == RE::FormType::ActorCharacter)
+			{
+				auto* actorB = refrB->As<RE::Actor>();
+				if (actorB && actorB->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
 					if (refrB->IsPlayerRef() && actorB->HasPerk(perkMirrorWall) && Utils::ArmorUtils::HasEquippedLightShield(actorB)) {
-						if (a_projectile->spell) {
-							//logger::info(" > B: Trying to parry projectile...");
-							return processProjectileParry(refrB->As<RE::Actor>(), a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableA));
-						}
+						//logger::info(" > B: Trying to parry projectile...");
+						return processProjectileParry(actorB, a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableA));
 					}
 				}
 			}
 		}
-
+		
 		return false;
 	}
 

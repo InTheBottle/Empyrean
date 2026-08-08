@@ -35,7 +35,7 @@ namespace Hooks
 		if (a_player->IsSprinting() || a_player->IsRunning()) {
 			float baseRate = SkillXPLightAmorBaseRate;
 			float armorCountAdd = SkillXPLightAmorGearCountAdd * (armorCount - 2);
-			float combatMult = a_player->IsInCombat() ? SkillXPLightAmorCombatMult : 1.0f;
+			float combatMult = a_player->IsInCombat() ? SkillXPLightAmorCombatMult : 0.0f;
 			float sprintMult = a_player->IsSprinting() ? SkillXPLightAmorSprintMult : 1.0f;
 			float skillUse = a_delta * (baseRate + armorCountAdd) * combatMult * sprintMult;
 			a_player->AddSkillExperience(RE::ActorValue::kLightArmor, skillUse);
