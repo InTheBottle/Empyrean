@@ -29,41 +29,5 @@ namespace Hooks
 
 		Utils::MagicUtils::RemoveOldestEffectStackWithKeyword(victim, KeywordWeapBleed);
 
-		/*
-		int bleedStackCount = 0;
-
-		const auto activeEffects = victim->GetActiveEffectList();
-		if (!activeEffects)
-			return;
-
-		float maxElapsedTime = 0.0;
-		RE::ActiveEffect* oldestBleedEff = nullptr;
-
-		for (const auto& activeEffect : *activeEffects) {
-			if (auto mgef = activeEffect ? activeEffect->GetBaseObject() : nullptr; mgef) {
-				if (activeEffect->flags.all(RE::ActiveEffect::Flag::kDispelled))
-					continue;
-
-				if (mgef->HasKeyword(KeywordWeapBleed))
-				{
-					bleedStackCount += 1;
-
-					float time = activeEffect->elapsedSeconds;
-					if (time >= maxElapsedTime)
-					{
-						maxElapsedTime = time;
-						oldestBleedEff = activeEffect;
-					}
-				}
-			}
-		}
-
-		//Don't stack up bleeding 
-		if (bleedStackCount > 1 && oldestBleedEff)
-		{
-			oldestBleedEff->Dispel(true);
-			//logger::info("     > TwoHanded: Dispelled oldeset bleed stack"sv);
-		}
-		*/
 	}
 }

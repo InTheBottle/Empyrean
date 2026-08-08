@@ -18,9 +18,7 @@ namespace Hooks
 
 		if (!a_hitData->weapon)
 			return;
-		
-		//if (a_hitData->flags.all(RE::HitData::Flag::kBlocked))
-		//	return;
+	
 
 		//Not a 1H bladed weapon
 		const auto KeywordWeapBladed1H = Data::ModObject<RE::BGSKeyword>("KeywordWeapBladed1H"sv);
@@ -33,16 +31,7 @@ namespace Hooks
 		const auto perkAThousandCuts = Data::ModObject<RE::BGSPerk>("PerkAThousandCuts"sv);
 		const auto PerkBleedOut = Data::ModObject<RE::BGSPerk>("PerkBleedOut"sv);
 		const auto KeywordWeapBleed = Data::ModObject<RE::BGSKeyword>("KeywordWeapBleed"sv);
-		//auto maxBleedDur = Settings::INI::GetSetting<float>(Settings::INI::THOUSAND_CUTS_MAX_BLEED_DUR).value_or(0.0);
-
-		/*
-		//Perk check
-		if (!aggressor->HasPerk(perkAThousandCuts))
-		{
-			//logger::info("AThousandCuts - Aggressor does not have perk AThousandCuts, aborting..."sv);
-			return;
-		}
-		*/
+	
 		
 		int bleedStackCount = 0;
 		bool wasPowerAttack = a_hitData->flags.all(RE::HitData::Flag::kPowerAttack);
@@ -56,7 +45,6 @@ namespace Hooks
 		}
 
 		//logger::info("AThousandCuts - Trying to increase bleed duration (max {})"sv, maxBleedDur);
-		//int index = 0;
 		float maxElapsedTime = 0.0;
 		RE::ActiveEffect* oldestBleedEff = nullptr;
 
@@ -80,17 +68,6 @@ namespace Hooks
 						oldestBleedEff = activeEffect;
 					}
 
-					/*
-					float newDur = activeEffect->duration + 1.0;
-					if (newDur > maxBleedDur && maxBleedDur > activeEffect->duration)
-						newDur = maxBleedDur;
-
-					activeEffect->duration = newDur;
-					//logger::info("     > Found active bleed effect #{} -> newDur = {}"sv, index, activeEffect->duration);
-					
-					activeBleedEffs.push_back(activeEffect);
-					//index += 1;
-					*/
 				}
 			}
 		}

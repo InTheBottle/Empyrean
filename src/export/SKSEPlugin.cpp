@@ -1,12 +1,10 @@
 #include "Hooks/Pickpocket.h"
-#include "hooks/Destruction.h"
 #include "Data/ModObjectManager.h"
 #include "Hooks/Hooks.h"
 #include "Papyrus/Papyrus.h"
 #include "Serialization/Serde.h"
 #include "Settings/INI/INISettings.h"
 #include "Settings/JSON/JSONSettings.h"
-#include "Hooks/Destruction.h"
 #include "Hooks/Smithing.h"
 #include "hooks/Block.h"
 
@@ -21,8 +19,6 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 
 		SECTION_SEPARATOR;
 		Hooks::Pickpocket::InstallActivateHook();
-		//Hooks::Destruction::LoadData();
-		//Hooks::ProcessSpellsForPatching();
 		Hooks::Smithing::LoadData();
 		Hooks::Block::LoadData();
 

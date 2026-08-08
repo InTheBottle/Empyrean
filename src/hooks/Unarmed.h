@@ -7,7 +7,6 @@ namespace Hooks
 	public:
 		static bool InstallHooks();
 
-		//static void ProcessCombatHit(const RE::HitData& a_hitData);
 		static void ProcessCombatHit(RE::Actor* a_this, RE::HitData* a_hitData);
 
 	private:

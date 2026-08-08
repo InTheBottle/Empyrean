@@ -29,7 +29,7 @@ namespace Hooks
 		auto SkillXPFromUnarmedMult = Settings::INI::GetSetting<float>(Settings::INI::SKILL_XP_FROM_UNARMED_MULT).value_or(0.0);
 		if (!giveLightXP && !giveHeavyXP) return;
 
-		float xp = a_hitData->totalDamage * SkillXPFromUnarmedMult;//"SkillXPFromUnarmedMult"_gv.value_or(0.25f);
+		float xp = a_hitData->totalDamage * SkillXPFromUnarmedMult;
 		//logger::info("  *Unarmed hit! SkillXPFromUnarmedMult = {}"sv, SkillXPFromUnarmedMult);
 
 		if (Utils::ArmorUtils::HasEquppedLightArmorGauntlets(aggressor->As<RE::Actor>()))

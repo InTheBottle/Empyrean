@@ -246,8 +246,6 @@ namespace Papyrus
 		BIND(GetAllEquippedArmor);
 		logger::info("  >Binding CreateStasisCubeFromAutomaton..."sv);
 		BIND(CreateStasisCubeFromAutomaton);
-		//logger::info("  >Binding AddAllEnchantedItemsWithKeywordToListAndRemoveEnch..."sv);
-		//BIND(AddAllEnchantedItemsWithKeywordToListAndRemoveEnch);
 	}
 
 	bool RegisterFunctions(VM* a_vm) {

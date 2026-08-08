@@ -136,7 +136,7 @@ namespace Hooks
 
 	bool Block::DoTryBashDestroyArrow(RE::Actor* a_actor, RE::Projectile* a_projectile)
 	{
-		if (!a_actor) return false;
+		if (!a_actor || !a_projectile) return false;
 
 		if (a_actor && (a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash ||
 			a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kSwing ||
