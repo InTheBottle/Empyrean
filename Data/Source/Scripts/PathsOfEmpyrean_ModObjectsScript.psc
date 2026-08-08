@@ -27,39 +27,6 @@ Keyword Property KeywordWeapBladed1H auto
 Keyword Property KeywordWeapBladed2H auto
 Spell Property SpellBleedOut auto
 
-;Keyword property PoE_K_MagicEffectMainFrost auto
-;Keyword property PoE_K_PiercingCold auto
-Keyword property PoE_K_Frostborn auto
-;Perk property PoE_PERK_DES_Frostborn auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFrost_ConcAimed auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFrost_ConcTarget auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFrost_FFAimed auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFrost_FFContact auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFrost_FFTarget auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFrost_FFTargetLoc auto
-
-;Keyword property PoE_K_MagicEffectMainFire auto
-;Perk property PoE_PERK_DES_CatchFire auto
-;Perk property PoE_PERK_DES_Immolate auto
-Keyword property PoE_K_Immolate auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFire_ConcAimed auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFire_ConcTarget auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFire_FFAimed auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFire_FFContact auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFire_FFTarget auto
-;Spell property PoE_SPELL_DES__SecondaryEffectsFire_FFTargetLoc auto
-
-;Perk property PoE_PERK_DES_ForceOfNature auto
-;Spell property PoE_SPELL_DES_SpellChaining_FireIce auto
-;Spell property PoE_SPELL_DES_SpellChaining_IceShock auto
-;Spell property PoE_SPELL_DES_SpellChaining_ShockFire auto
-;Keyword property PoE_K_SpellChaining_Fire auto
-;Keyword property PoE_K_SpellChaining_Frost auto
-;Keyword property PoE_K_SpellChaining_Shock auto
-;Keyword property PoE_K_SpellChaining_FireFrost_cool auto
-;Keyword property PoE_K_SpellChaining_FrostElectric_cool auto
-;Keyword property PoE_K_SpellChaining_ShockFire_cool auto
-
 Keyword property IWP_K_DwarvenAutomaton auto
 Keyword property IWP_K_DwarvenAutomatonFabricant auto
 Keyword property IWP_K_DwarvenAutomatonAether auto
