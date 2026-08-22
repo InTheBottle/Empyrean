@@ -247,4 +247,93 @@ namespace Hooks
 		RE::SendHUDMessage::ShowHUDMessage(std::format("Added {}", name).c_str());
 	}
 
+	void Smithing::FixAutomatonPotionsInContainer(RE::TESObjectREFR* contRef)
+	{
+		if (!contRef) return;
+
+		const auto invChanges = contRef->GetInventoryChanges(true);
+		if (!invChanges) {
+			return;
+		}
+
+		const auto invLists = invChanges->entryList;
+		if (!invLists || invLists->empty()) {
+			return;
+		}
+
+		for (const auto& entry : *invLists) {
+			const auto obj = entry ? entry->object : nullptr;
+			if (!obj) { continue; }
+			
+			const auto potion = obj->As<RE::AlchemyItem>();
+			if (!potion) { continue; }
+
+			const auto mainEff = potion->GetCostliestEffectItem();
+			if (!mainEff) continue;
+
+			int indexMagEff = 0;
+			float weight = 0.0;
+			std::string modelName = "";
+			for (auto* form : ListSpawnRaceMagEffsFabricant->forms)
+			{
+				const auto magEff = form->As<RE::EffectSetting>();
+				if (mainEff->baseEffect->formID == magEff->formID)
+				{
+					//logger::info("  > Found a Fabricant cube!"sv);
+					auto glo = ListFabricantWeights->forms[indexMagEff]->As<RE::TESGlobal>();
+					if (glo) weight = glo->value;
+					modelName = "Clutter\\Dwemer\\DweLexiconCubeCorrupt01.nif";
+					break;
+				}
+				indexMagEff += 1;
+			}
+
+			if (modelName == "")
+			{
+				indexMagEff = 0;
+				for (auto* form : ListSpawnRaceMagEffs->forms)
+				{
+					const auto magEff = form->As<RE::EffectSetting>();
+					if (mainEff->baseEffect->formID == magEff->formID)
+					{
+						//logger::info("  > Found a normal cube!"sv);
+						auto glo = ListRaceWeights->forms[indexMagEff]->As<RE::TESGlobal>();
+						if (glo) weight = glo->value;
+						modelName = "Clutter\\Dwemer\\DwePuzzleCube.nif";
+						break;
+					}
+					indexMagEff += 1;
+				}
+			}
+			if (modelName == "")
+			{
+				indexMagEff = 0;
+				for (auto* form : ListSpawnRaceMagEffsAether->forms)
+				{
+					const auto magEff = form->As<RE::EffectSetting>();
+					if (mainEff->baseEffect->formID == magEff->formID)
+					{
+						//logger::info("  > Found an Aether cube!"sv);
+						auto glo = ListRaceWeights->forms[indexMagEff]->As<RE::TESGlobal>();
+						if (glo) weight = glo->value;
+						modelName = "Clutter\\Dwemer\\DweLexiconCubeRunes01.nif";
+						break;
+					}
+					indexMagEff += 1;
+				}
+			}
+			if (modelName == "") continue;
+
+
+			std::string name = std::format("Automaton Stasis Cube: {}",mainEff->baseEffect->GetName());
+			potion->SetFullName(name.c_str());
+			potion->weight = weight;
+			potion->SetModel(modelName.c_str());
+			potion->AddKeyword(KeywordCraftingAutomaton);
+			potion->AddKeyword(KeywordCraftingSmithingForge);
+			potion->AddKeyword(KeywordVendorItemClutter);
+			potion->AddKeyword(KeywordVendorItemTool);
+		}
+	}
+
 }

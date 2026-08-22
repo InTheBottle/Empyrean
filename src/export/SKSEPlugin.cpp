@@ -25,6 +25,13 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 		SECTION_SEPARATOR;
 		logger::info("Finished startup tasks, enjoy your game!"sv);
 		break;
+
+	case SKSE::MessagingInterface::kPostLoadGame:
+		SECTION_SEPARATOR;
+		logger::info("Post Load Game"sv);
+		Hooks::Smithing::FixAutomatonPotionsInContainer(RE::PlayerCharacter::GetSingleton());
+		break;
+
 	default:
 		break;
 	}

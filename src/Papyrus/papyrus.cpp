@@ -28,6 +28,21 @@ namespace Papyrus
 	}
 
 	//----------------------------------------------------------------------------------------------------
+	static void FixAutomatonPotionsInContainer(STATIC_ARGS, RE::TESObjectREFR* contRef)
+	{
+		return Hooks::Smithing::FixAutomatonPotionsInContainer(contRef);
+	}
+
+	//----------------------------------------------------------------------------------------------------
+	static void SetMagicEffectDescription(STATIC_ARGS, RE::EffectSetting* a_mgef, std::string_view a_descr)
+	{
+		if (!a_mgef) return;
+
+		a_mgef->magicItemDescription = a_descr;
+		//logger::info("  > SetMagicEffectDescription() -> {}"sv, a_mgef->magicItemDescription.c_str());
+	}
+
+	//----------------------------------------------------------------------------------------------------
 	/*
 	static auto GetExtraHealthList(RE::BSSimpleList<RE::ExtraDataList*>* a_lists) -> RE::ExtraDataList*
 	{
@@ -246,6 +261,10 @@ namespace Papyrus
 		BIND(GetAllEquippedArmor);
 		logger::info("  >Binding CreateStasisCubeFromAutomaton..."sv);
 		BIND(CreateStasisCubeFromAutomaton);
+		logger::info("  >Binding FixAutomatonPotionsInContainer..."sv);
+		BIND(FixAutomatonPotionsInContainer);
+		logger::info("  >Binding SetMagicEffectDescription..."sv);
+		BIND(SetMagicEffectDescription);
 	}
 
 	bool RegisterFunctions(VM* a_vm) {
