@@ -43,7 +43,7 @@ namespace Papyrus
 	}
 
 	//----------------------------------------------------------------------------------------------------
-	/*
+	
 	static auto GetExtraHealthList(RE::BSSimpleList<RE::ExtraDataList*>* a_lists) -> RE::ExtraDataList*
 	{
 		if (a_lists) {
@@ -77,7 +77,7 @@ namespace Papyrus
 		return func(a_extra, a_health);
 	}
 
-	static void RemoveEnchantment(RE::InventoryEntryData* a_entry)
+	static void RemoveEnchantment(RE::TESObjectREFR* contRef, RE::InventoryEntryData* a_entry)
 	{
 		if (!a_entry) return;
 
@@ -116,18 +116,18 @@ namespace Papyrus
 		if (templateItem) {
 			logger::info("  > Has template"sv);
 			auto xListOld = GetExtraHealthList(a_entry->extraLists);
-			const auto player = RE::PlayerCharacter::GetSingleton();
+			//const auto player = RE::PlayerCharacter::GetSingleton();
 
 			if (xListOld) {
 				auto xListNew = ConstructExtraDataList(RE::MemoryManager::GetSingleton()->Allocate(0x20, 0, false));
 				SetExtraHealth(xListNew, GetExtraHealth(xListOld));
 
-				player->RemoveItem(item, 1, RE::ITEM_REMOVE_REASON::kRemove, xListOld, nullptr);
-				player->AddObjectToContainer(templateItem, xListNew, 1, nullptr);
+				contRef->RemoveItem(item, 1, RE::ITEM_REMOVE_REASON::kRemove, xListOld, nullptr);
+				contRef->AddObjectToContainer(templateItem, xListNew, 1, nullptr);
 			}
 			else {
-				player->RemoveItem(item, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
-				player->AddObjectToContainer(templateItem, nullptr, 1, nullptr);
+				contRef->RemoveItem(item, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
+				contRef->AddObjectToContainer(templateItem, nullptr, 1, nullptr);
 			}
 		}
 			
@@ -141,25 +141,41 @@ namespace Papyrus
 		const auto tasks = SKSE::GetTaskInterface();
 
 		tasks->AddUITask([queue, strings]() {
-			queue->AddMessage(strings->craftingMenu, RE::UI_MESSAGE_TYPE::kHide, nullptr);
-			queue->AddMessage(strings->craftingMenu, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+			queue->AddMessage(strings->giftMenu, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+			queue->AddMessage(strings->giftMenu, RE::UI_MESSAGE_TYPE::kShow, nullptr);
 			});
 	}
 
 	//----------------------------------------------------------------------------------------------------
-	static void AddAllEnchantedItemsWithKeywordToListAndRemoveEnch(STATIC_ARGS, RE::TESObjectREFR* contRef, RE::BGSListForm* a_list, RE::BGSKeyword* a_keyword)
+	static bool RemoveItemEnchantment(STATIC_ARGS, RE::TESObjectREFR* contRef, RE::TESForm* item)
 	{
-		if (!contRef || !a_list || !a_keyword) return;
-		//logger::info("  >GetNumEnchantedFormsWithKeyword() - keyword EDID = {}"sv, keywordEDID);
+		if (!contRef || !item) return false;
+
+		logger::info("RemoveItemEnchantment()"sv);
+
+		const auto armor = item->As<RE::TESObjectARMO>();
+		const auto weapon = item->As<RE::TESObjectWEAP>();
+		if (!armor && !weapon) 
+		{ 
+			logger::info("  > Not weapon or armor, aborting..."sv);
+			return false; 
+		}
+
+		//const auto keywordDisallowEnchanting = RE::TESForm::LookupByEditorID("MagicDisallowEnchanting")->As<RE::BGSKeyword>();
+		if (item->HasKeywordByEditorID("MagicDisallowEnchanting") || item->HasKeywordByEditorID("DaedricArtifact")) 
+		{
+			logger::info("  > Can't be disenchanted, aborting..."sv);
+			return false;
+		}
 
 		auto* invChanges = contRef->GetInventoryChanges(true);
 		if (!invChanges) {
-			return;
+			return false;
 		}
 
 		auto* invLists = invChanges->entryList;
 		if (!invLists || invLists->empty()) {
-			return;
+			return false;
 		}
 
 		for (auto& entry : *invChanges->entryList) {
@@ -167,46 +183,18 @@ namespace Papyrus
 			if (!obj) {
 				continue;
 			}
-
-			bool hasTargetEnch = false;
-			bool hasOtherEnch = false;
-
-			//Non-player made enchantment
-			auto ench = obj->As<RE::TESEnchantableForm>();
-			if (ench && ench->formEnchanting) {
-				for (auto& effect : ench->formEnchanting->effects) {
-					if (effect->baseEffect->HasKeyword(a_keyword)) 
-						hasTargetEnch = true;
-					else 
-						hasOtherEnch = true;
-				}
-			}
-
-			auto* xLists = entry->extraLists;
-			if (xLists) {
-				//Player-made enchantment
-				for (auto* xList : *xLists) {
-					auto xEnch = xList->GetByType<RE::ExtraEnchantment>();
-					if (xEnch && xEnch->enchantment) {
-						for (auto& effect : xEnch->enchantment->effects) {
-							if (effect->baseEffect->HasKeyword(a_keyword))
-								hasTargetEnch = true;
-							else
-								hasOtherEnch = true;
-						}
-					}
-				}
-			}
-
-			if (hasTargetEnch && !hasOtherEnch)
+			if (entry->object->formID == item->formID)
 			{
-				a_list->AddForm(obj);
-				RemoveEnchantment(entry);
-				UpdateUI();
+				//logger::info("  > Found item!"sv);
+				RemoveEnchantment(contRef, entry);
+				//UpdateUI();
+				return true;
 			}
 		}
+		//logger::info("  > Item not found, aborting..."sv);
+		return false;
 	}
-	*/
+	
 
 	//----------------------------------------------------------------------------------------------------
 	/*
@@ -265,6 +253,8 @@ namespace Papyrus
 		BIND(FixAutomatonPotionsInContainer);
 		logger::info("  >Binding SetMagicEffectDescription..."sv);
 		BIND(SetMagicEffectDescription);
+		logger::info("  >Binding RemoveItemEnchantment..."sv);
+		BIND(RemoveItemEnchantment);
 	}
 
 	bool RegisterFunctions(VM* a_vm) {

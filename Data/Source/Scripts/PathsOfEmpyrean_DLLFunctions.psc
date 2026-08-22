@@ -17,3 +17,5 @@ function FixAutomatonPotionsInContainer(ObjectReference contRef) global native
 
 function SetMagicEffectDescription(MagicEffect magEff, string desc) global native
 
+bool function RemoveItemEnchantment(ObjectReference contRef, Form item) global native
+
