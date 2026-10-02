@@ -45,7 +45,10 @@ namespace Hooks
 	void LightArmor::InstallSprintingCostHook()
 	{
 		auto hook = REL::Relocation<std::uintptr_t>(RE::Offset::Actor::UpdateSprinting, 0xCE);
-		REL::make_pattern<"0F 57 05">().match_or_fail(hook.address());
+		if (!REL::make_pattern<"0F 57 05">().match(hook.address())) {
+			logger::error("    > Sprinting cost hook did not find the expected instruction at {:#x}, skipping"sv, hook.address());
+			return;
+		}
 
 		// TRAMPOLINE: 17
 		struct Patch : Xbyak::CodeGenerator

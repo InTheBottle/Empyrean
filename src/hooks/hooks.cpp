@@ -16,11 +16,6 @@
 namespace Hooks {
 	bool Install() {
 		logger::info("Installing hooks..."sv);
-		static constexpr std::size_t requiredHookAllocation = 14u; // 1 * 14 bytes for CALL.
-		std::size_t additionalAlloc = 0u;
-
-		//SKSE::AllocTrampoline(requiredHookAllocation, additionalAlloc);
-		SKSE::AllocTrampoline(249);
 
 		bool result = true;
 
@@ -40,7 +35,7 @@ namespace Hooks {
 	void InstallUpdateHook()
 	{
 		auto vtbl = REL::Relocation<std::uintptr_t>(RE::Offset::PlayerCharacter::Vtbl);
-		_Update = vtbl.write_vfunc(173, &Update);
+		_Update = vtbl.write_vfunc(REL::Relocate(173, 173, 175), &Update);
 	}
 
 	void Update(RE::PlayerCharacter* a_player, float a_delta)
@@ -53,7 +48,11 @@ namespace Hooks {
 	void InstallCombatHitHook()
 	{
 		auto& trampoline = SKSE::GetTrampoline();
-		REL::Relocation<std::uintptr_t> target{ RE::Offset::Actor::CombatHit, 0x4A8 };
+		REL::Relocation<std::uintptr_t> target{ RE::Offset::Actor::CombatHit, REL::VariantOffset(0x3C0, 0x4A8, 0x3C0) };
+		if (!util::is_call_site(target.address())) {
+			logger::error("  CombatHit hook did not find a call at {:#x}, skipping"sv, target.address());
+			return;
+		}
 		_CombatHit = trampoline.write_call<5>(target.address(), &ProcessCombatHit);
 	}
 

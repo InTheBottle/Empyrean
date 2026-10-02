@@ -5,13 +5,14 @@
   "homepage": "https://github.com/SeaSparrowOG/SKSE-Plugin-Template",
   "license": "MIT",
   "dependencies": [
-    "boost-stl-interfaces",
+    "directxmath",
+    "directxtk",
     "fmt",
     "jsoncpp",
-    "rsm-binary-io",
-    "spdlog",
+    "rapidcsv",
     "simpleini",
+    "spdlog",
     "xbyak"
   ],
-  "builtin-baseline": "f4ea42fa5c2b993cf2b75725331616999e2e34d1"
+  "builtin-baseline": "ee12231b20c95013c6638d845d04c91559a1d1ff"
 }

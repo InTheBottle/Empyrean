@@ -34,57 +34,19 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 	}
 }
 
-#ifdef SKYRIM_AE
-extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []()
-	{
-		SKSE::PluginVersionData v{};
+SKSEPluginInfo(
+	.Version = Plugin::VERSION,
+	.Name = Plugin::NAME,
+	.Author = "Steelfeathers & SeaSparrow"sv,
+	.RuntimeCompatibility = SKSE::VersionIndependence::AddressLibrary
+)
 
-		v.PluginVersion(Plugin::VERSION);
-		v.PluginName(Plugin::NAME);
-		v.AuthorName("Steelfeathers & SeaSparrow"sv);
-		v.UsesAddressLibrary();
-		v.UsesUpdatedStructs();
-
-		return v;
-	}();
-#endif
-
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
+SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 {
-	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = Plugin::NAME.data();
-	a_info->version = Plugin::VERSION[0];
-
-	if (a_skse->IsEditor()) {
-		logger::critical("Loaded in editor, marking as incompatible"sv);
-		return false;
-	}
-
-	const auto ver = a_skse->RuntimeVersion();
-#ifdef SKYRIM_AE
-	if (ver < SKSE::RUNTIME_SSE_LATEST) {
-#else
-	if (ver < SKSE::RUNTIME_1_5_39) {
-#endif
-		logger::critical(FMT_STRING("Unsupported runtime version {}"), ver.string());
-		return false;
-	}
-
-	return true;
-	}
-
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface * a_skse)
-{
-	SKSE::Init(a_skse);
+	SKSE::Init(a_skse, { .trampoline = true, .trampolineSize = 249 });
 	logger::info("Author: Steelfeathers & SeaSparrow"sv);
+	logger::info("Runtime: {} ({})"sv, REL::Module::get().version().string(), REL::Module::IsVR() ? "VR"sv : REL::Module::IsAE() ? "AE"sv : "SE"sv);
 	SECTION_SEPARATOR;
-
-#ifdef SKYRIM_AE
-	const auto ver = a_skse->RuntimeVersion();
-	if (ver < SKSE::RUNTIME_SSE_LATEST) {
-		return false;
-	}
-#endif
 
 	logger::info("Performing startup tasks..."sv);
 

@@ -29,10 +29,10 @@ namespace logger = SKSE::log;
 using namespace std::literals;
 using namespace RE::literals;
 
-template <typename Tag, typename, std::uint64_t ID, std::ptrdiff_t Off>
+template <typename Tag, typename, const REL::RelocationID& ID, std::ptrdiff_t Off>
 struct CallHookImpl;
 
-template <typename Tag, typename R, typename... Args, std::uint64_t ID, std::ptrdiff_t Off>
+template <typename Tag, typename R, typename... Args, const REL::RelocationID& ID, std::ptrdiff_t Off>
 struct CallHookImpl<Tag, R(Args...), ID, Off>
 {
     static R func(Args...);
@@ -56,14 +56,19 @@ namespace util
     template <auto F>
     inline static const auto& call_original = original_func<F>::value;
 
-    template <typename Tag, typename F, std::uint64_t ID, std::ptrdiff_t Off>
+    [[nodiscard]] inline bool is_call_site(std::uintptr_t a_address)
+    {
+        return REL::make_pattern<"E8">().match(a_address);
+    }
+
+    template <typename Tag, typename F, const REL::RelocationID& ID, std::ptrdiff_t Off>
     struct CallHook
     {
         template <std::size_t N, bool TAIL = false>
         static bool write()
         {
-            auto hook = REL::Relocation<std::uintptr_t>(REL::ID(ID), Off);
-            []()
+            auto hook = REL::Relocation<std::uintptr_t>(ID, Off);
+            const bool matched = []()
                 {
                     if constexpr (N == 5)
                         if constexpr (!TAIL)
@@ -76,17 +81,18 @@ namespace util
                         else
                             return REL::make_pattern<"FF 25">();
                 }()
-                    .match_or_fail(hook.address());
+                    .match(hook.address());
 
-                std::uintptr_t addr =
-                    (SKSE::GetTrampoline().*
-                        []()
-                        {
-                            if constexpr (!TAIL)
-                                return &SKSE::Trampoline::write_call<N, F>;
-                            else
-                                return &SKSE::Trampoline::write_branch<N, F>;
-                        }())(hook.address(), &CallHookImpl<Tag, F, ID, Off>::func);
+                if (!matched) {
+                    logger::error("Call hook for ID {} at offset {:#x} did not find the expected opcode at {:#x}, skipping"sv, ID.id(), Off, hook.address());
+                    return false;
+                }
+
+                std::uintptr_t addr = 0;
+                if constexpr (!TAIL)
+                    addr = SKSE::GetTrampoline().write_call<N>(hook.address(), &CallHookImpl<Tag, F, ID, Off>::func);
+                else
+                    addr = SKSE::GetTrampoline().write_branch<N>(hook.address(), &CallHookImpl<Tag, F, ID, Off>::func);
 
                 if constexpr (N == 6)
                     addr = *reinterpret_cast<std::uintptr_t*>(addr);
@@ -159,11 +165,3 @@ template <class T>
 inline constexpr bool always_false = false;
 
 #define SECTION_SEPARATOR logger::info("=========================================================="sv)
-
-#ifdef SKYRIM_AE
-#	define OFFSET(se, ae) ae
-#	define OFFSET_3(se, ae, vr) ae
-#else
-#	define OFFSET(se, ae) se
-#	define OFFSET_3(se, ae, vr) se
-#endif

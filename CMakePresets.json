@@ -57,17 +57,6 @@
       }
     },
     {
-      "name": "outdated",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/build-outdated",
-      "cacheVariables": {
-        "FULL_RELEASE": true,
-        "OUTDATED": true,
-        "COPY_BSA": true,
-        "COPY_PSC": true
-      }
-    },
-    {
       "name": "vs2022-windows-vcpkg-release",
       "inherits": [
         "cmake-dev",
@@ -75,19 +64,6 @@
         "windows",
         "vs2022",
         "release"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "Outdated",
-      "inherits": [
-        "cmake-dev",
-        "vcpkg",
-        "windows",
-        "vs2022",
-        "outdated"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"

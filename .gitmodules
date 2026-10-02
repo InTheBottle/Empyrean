@@ -1,6 +1,7 @@
-[submodule "External/CommonLibSSE"]
-	path = External/CommonLibSSE
-	url = https://github.com/SeaSparrowOG/CommonLibSSE
+[submodule "External/CommonLibSSE-NG"]
+	path = External/CommonLibSSE-NG
+	url = https://github.com/alandtse/CommonLibVR.git
+	branch = ng
 [submodule "Tools/SKSE-CMakeModules"]
 	path = Tools/SKSE-CMakeModules
 	url = https://github.com/Exit-9B/SKSE-CMakeModules.git

@@ -2,30 +2,20 @@
 
 namespace RE::Offset
 {
-	namespace Example
-	{
-		constexpr auto FunctionName = REL::ID(55976);
-	}
-
 	namespace Actor
 	{
-		constexpr auto ActorValueModifiedCallbacks = REL::ID(403905);
-		constexpr auto CheckAbsorb = REL::ID(38741);
-		constexpr auto CombatHit = REL::ID(38627);
-		constexpr auto ComputeMovementType = REL::ID(37943);
-		constexpr auto ForceUpdateCachedMovementType = REL::ID(37941);
-		constexpr auto Jump = REL::ID(37257);
-		constexpr auto UpdateCommandedActor = REL::ID(38799);
-		constexpr auto UpdateSprinting = REL::ID(38022);
+		inline constexpr REL::RelocationID CombatHit(37673, 38627);
+		inline constexpr REL::RelocationID Jump(36271, 37257);
+		inline constexpr REL::RelocationID UpdateSprinting(36994, 38022);
 	}
 
 	namespace PlayerCharacter
 	{
-		inline constexpr REL::ID Vtbl(static_cast<std::uint64_t>(208040));
+		inline constexpr REL::VariantID Vtbl = RE::VTABLE_PlayerCharacter[0];
 	}
 
-	constexpr auto HandleWeaponSpeedChannel = REL::ID(42779);
-	constexpr auto HandleLeftWeaponSpeedChannel = REL::ID(42780);
+	inline constexpr REL::RelocationID HandleWeaponSpeedChannel(37386, 42779);
+	inline constexpr REL::RelocationID HandleLeftWeaponSpeedChannel(37378, 42780);
 
 	typedef RE::TESObjectREFR* (_fastcall* _getEquippedShield)(RE::Actor* a_actor);
 	inline static REL::Relocation<_getEquippedShield> getEquippedShield{ RELOCATION_ID(37624, 38577) };

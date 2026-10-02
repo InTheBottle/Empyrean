@@ -52,14 +52,14 @@ namespace Hooks
 	}
 
 	using GetCurrentWeapon_t = RE::TESObjectWEAP* (const RE::Actor*, bool);
-	template <std::uint64_t ID, std::ptrdiff_t Off>
+	template <const REL::RelocationID& ID, std::ptrdiff_t Off>
 	struct CallHookImpl<struct WeaponSpeedTag, GetCurrentWeapon_t, ID, Off>
 	{
 		static RE::TESObjectWEAP* func(const RE::Actor* a_actor, bool a_leftHand)
 		{
 			auto weapon = util::call_original<&func>(a_actor, a_leftHand);
 			if (!weapon) {
-				const auto process = a_actor->currentProcess;
+				const auto process = a_actor->GetActorRuntimeData().currentProcess;
 				const auto middleHigh = process ? process->middleHigh : nullptr;
 				if (middleHigh) {
 					const auto object = !a_leftHand ? middleHigh->rightHand : middleHigh->leftHand;
@@ -85,13 +85,13 @@ namespace Hooks
 		util::CallHook<
 			struct WeaponSpeedTag,
 			GetCurrentWeapon_t,
-			RE::Offset::HandleWeaponSpeedChannel.id(),
+			RE::Offset::HandleWeaponSpeedChannel,
 			0xE>::write5();
 
 		util::CallHook<
 			struct WeaponSpeedTag,
 			GetCurrentWeapon_t,
-			RE::Offset::HandleLeftWeaponSpeedChannel.id(),
+			RE::Offset::HandleLeftWeaponSpeedChannel,
 			0xE>::write5();
 	}
 }

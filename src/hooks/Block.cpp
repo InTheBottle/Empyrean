@@ -14,16 +14,21 @@ namespace Hooks
 		if (enableBashStaminaReduction)
 		{
 			auto& trampoline = SKSE::GetTrampoline();
-			REL::Relocation<std::uintptr_t> hook{ REL::ID(38603), 0x171 };
-			_getAttackStaminaCost = trampoline.write_call<5>(hook.address(), &GetAttackStaminaCost);
-			logger::info("    > Installed hook for SkirmishersTarge"sv);
+			REL::Relocation<std::uintptr_t> hook{ RELOCATION_ID(37650, 38603), REL::VariantOffset(0x16E, 0x171, 0x16E) };
+			if (util::is_call_site(hook.address())) {
+				_getAttackStaminaCost = trampoline.write_call<5>(hook.address(), &GetAttackStaminaCost);
+				logger::info("    > Installed hook for SkirmishersTarge"sv);
+			}
+			else {
+				logger::error("    > SkirmishersTarge hook did not find a call at {:#x}, skipping"sv, hook.address());
+			}
 		}
 
 		auto enableBashSpellReflection = Settings::INI::GetSetting<bool>(Settings::INI::ENABLE_BASH_SPELL_REFLECTION).value_or(false);
 		if (enableBashSpellReflection)
 		{
 			REL::Relocation<std::uintptr_t> missileProjectileVtbl{ RE::VTABLE_MissileProjectile[0] };
-			_missileCollision = missileProjectileVtbl.write_vfunc(190, OnMissileCollision);
+			_missileCollision = missileProjectileVtbl.write_vfunc(REL::Relocate(190, 190, 191), OnMissileCollision);
 			logger::info("    > Installed hook for MirrorWall"sv);
 		}
 
@@ -31,7 +36,7 @@ namespace Hooks
 		if (enableBashDestroyArrow)
 		{
 			REL::Relocation<std::uintptr_t> arrowProjectileVtbl{ RE::VTABLE_ArrowProjectile[0] };
-			_arrowCollision = arrowProjectileVtbl.write_vfunc(190, OnArrowCollision);
+			_arrowCollision = arrowProjectileVtbl.write_vfunc(REL::Relocate(190, 190, 191), OnArrowCollision);
 			logger::info("    > Installed hook for ReflectArrows"sv);
 		}
 		
@@ -168,7 +173,7 @@ namespace Hooks
 	bool Block::TryBashReflectSpell(RE::Projectile* a_projectile, RE::hkpAllCdPointCollector* a_AllCdPointCollector)
 	{
 		if (!a_AllCdPointCollector || !a_projectile) return false;
-		if (!a_projectile->spell) return false;
+		if (!a_projectile->GetProjectileRuntimeData().spell) return false;
 
 		for (auto& hit : a_AllCdPointCollector->hits) {
 			auto refrA = RE::TESHavokUtilities::FindCollidableRef(*hit.rootCollidableA);
@@ -208,8 +213,8 @@ namespace Hooks
 		auto angle = a_parrier->GetHeadingAngle(a_projectile->GetPosition(), false);
 		if (angle <= _parryAngle && angle >= -_parryAngle) {
 			RE::TESObjectREFR* shooter = nullptr;
-			if (a_projectile->shooter && a_projectile->shooter.get()) {
-				shooter = a_projectile->shooter.get().get();
+			if (a_projectile->GetProjectileRuntimeData().shooter && a_projectile->GetProjectileRuntimeData().shooter.get()) {
+				shooter = a_projectile->GetProjectileRuntimeData().shooter.get().get();
 			}
 
 			resetProjectileOwner(a_projectile, a_parrier, a_projectile_collidable);
@@ -252,7 +257,7 @@ namespace Hooks
 	void Block::resetProjectileOwner(RE::Projectile* a_projectile, RE::Actor* a_actor, RE::hkpCollidable* a_projectile_collidable)
 	{
 		a_projectile->SetActorCause(a_actor->GetActorCause());
-		a_projectile->shooter = a_actor->GetHandle();
+		a_projectile->GetProjectileRuntimeData().shooter = a_actor->GetHandle();
 		RE::CFilter a_collisionFilterInfo;
 		a_actor->GetCollisionFilterInfo(a_collisionFilterInfo);
 		a_projectile_collidable->broadPhaseHandle.collisionFilterInfo.SetSystemGroup(a_collisionFilterInfo.filter);
@@ -354,13 +359,13 @@ namespace Hooks
 
 	void Block::ReflectProjectile(RE::Projectile* a_projectile)
 	{
-		a_projectile->linearVelocity *= -1.f;
+		a_projectile->GetProjectileRuntimeData().linearVelocity *= -1.f;
 
 		// rotate model
 		auto projectileNode = a_projectile->Get3D2();
 		if (projectileNode)
 		{
-			RE::NiPoint3 direction = a_projectile->linearVelocity;
+			RE::NiPoint3 direction = a_projectile->GetProjectileRuntimeData().linearVelocity;
 			direction.Unitize();
 
 			a_projectile->data.angle.x = asin(direction.z);
@@ -381,10 +386,10 @@ namespace Hooks
 	/*Get the body position of this actor.*/
 	void Block::getBodyPos(RE::Actor* a_actor, RE::NiPoint3& pos)
 	{
-		if (!a_actor->race) {
+		if (!a_actor->GetActorRuntimeData().race) {
 			return;
 		}
-		RE::BGSBodyPart* bodyPart = a_actor->race->bodyPartData->parts[0];
+		RE::BGSBodyPart* bodyPart = a_actor->GetActorRuntimeData().race->bodyPartData->parts[0];
 		if (!bodyPart) {
 			return;
 		}
@@ -398,7 +403,7 @@ namespace Hooks
 
 	void Block::RetargetProjectile(RE::Projectile* a_projectile, RE::TESObjectREFR* a_target)
 	{
-		a_projectile->desiredTarget = a_target;
+		a_projectile->GetProjectileRuntimeData().desiredTarget = a_target;
 
 		auto projectileNode = a_projectile->Get3D2();
 		auto targetHandle = a_target->GetHandle();
@@ -412,8 +417,8 @@ namespace Hooks
 		targetHandle.get()->GetLinearVelocity(targetVelocity);
 
 		float projectileGravity = 0.f;
-		if (auto ammo = a_projectile->ammoSource) {
-			if (auto bgsProjectile = ammo->data.projectile) {
+		if (auto ammo = a_projectile->GetProjectileRuntimeData().ammoSource) {
+			if (auto bgsProjectile = ammo->GetRuntimeData().data.projectile) {
 				projectileGravity = bgsProjectile->data.gravity;
 				if (auto bhkWorld = a_projectile->parentCell->GetbhkWorld()) {
 					if (auto hkpWorld = bhkWorld->GetWorld1()) {
@@ -427,10 +432,10 @@ namespace Hooks
 			}
 		}
 
-		PredictAimProjectile(a_projectile->data.location, targetPos, targetVelocity, projectileGravity, a_projectile->linearVelocity);
+		PredictAimProjectile(a_projectile->data.location, targetPos, targetVelocity, projectileGravity, a_projectile->GetProjectileRuntimeData().linearVelocity);
 
 		// rotate
-		RE::NiPoint3 direction = a_projectile->linearVelocity;
+		RE::NiPoint3 direction = a_projectile->GetProjectileRuntimeData().linearVelocity;
 		direction.Unitize();
 
 		a_projectile->data.angle.x = asin(direction.z);

@@ -100,9 +100,17 @@ namespace Hooks
 	{
 		logger::info("  Installing Pickpocket Activate Hook..."sv);
 
-        //SE ID 55610
+        if (REL::Module::IsVR()) {
+            logger::info("    > Skipped on Skyrim VR"sv);
+            return;
+        }
+
         auto& trampoline = SKSE::GetTrampoline();
-        REL::Relocation<std::uintptr_t> target{ REL::ID(56139), 0x4A };
+        REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(55610, 56139), 0x4A };
+        if (!util::is_call_site(target.address())) {
+            logger::error("    > Activate hook did not find a call at {:#x}, skipping"sv, target.address());
+            return;
+        }
         activate_original = trampoline.write_call<5>(target.address(), &ActivateHook);
 
     }
