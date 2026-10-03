@@ -4,6 +4,7 @@
 
 /.vs
 /build
+/dist
 /build-ng
 /build-test
 /build-outdated
