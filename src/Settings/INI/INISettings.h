@@ -46,6 +46,7 @@ namespace Settings
 			bool OverrideSettings();
 		};
 
+		inline static constexpr const char* ENABLE_SPRINT_STAMINA_REDUCTION = "LightArmor|bEnableSprintingCostReduction";
 		inline static constexpr const char* ENABLE_LIGHTARMOR_PASSIVE_XP = "LightArmor|bGainPassiveLightArmorXP";
 		inline static constexpr const char* SKILL_XP_LIGHTARMOR_BASE_RATE = "LightArmor|fSkillXPLightAmorBaseRate";
 		inline static constexpr const char* SKILL_XP_LIGHTARMOR_GEAR_COUNT_ADD = "LightArmor|fSkillXPLightAmorGearCountAdd";
@@ -61,9 +62,10 @@ namespace Settings
 		inline static constexpr const char* SKILL_XP_BLOCK_REFLECT_SPELL = "Block|fSkillXPBlockReflectSpell";
 		inline static constexpr const char* SKILL_XP_BLOCK_DESTROY_ARROW = "Block|fSkillXPBlockDestroyArrow";
 
-		inline static constexpr const std::uint8_t EXPECTED_COUNT = 14;
+		inline static constexpr const std::uint8_t EXPECTED_COUNT = 15;
 
 		inline static constexpr const std::array<const char*, EXPECTED_COUNT> EXPECTED_SETTINGS = {
+			ENABLE_SPRINT_STAMINA_REDUCTION,
 			ENABLE_LIGHTARMOR_PASSIVE_XP,
 			SKILL_XP_LIGHTARMOR_BASE_RATE,
 			SKILL_XP_LIGHTARMOR_GEAR_COUNT_ADD,

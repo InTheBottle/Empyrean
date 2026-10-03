@@ -79,7 +79,10 @@ namespace Hooks
 	void Unarmed::WeaponSpeedMultPatch()
 	{
 		if (!Settings::INI::GetSetting<bool>(Settings::INI::ENABLE_UNARMED_SPEED_FIX).value_or(true))
+		{
+			logger::info("    > Skipped installing Unarmed attack speed fix"sv);
 			return;
+		}
 
 		// TRAMPOLINE: 28
 		util::CallHook<

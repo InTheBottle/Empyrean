@@ -19,7 +19,10 @@ namespace Hooks
 	{
 		auto givePassiveXP = Settings::INI::GetSetting<bool>(Settings::INI::ENABLE_LIGHTARMOR_PASSIVE_XP).value_or(false);
 		if (!givePassiveXP)
+		{
+			logger::info("    > Skipped installing LightArmor XP hook"sv);
 			return;
+		}
 
 		//Give player LightArmor XP if moving while wearing at least 2 pieces of light armor; more XP during combat
 		if (a_player->IsOnMount()) { return; }
@@ -44,6 +47,13 @@ namespace Hooks
 
 	void LightArmor::InstallSprintingCostHook()
 	{
+		auto installSprintCostHook = Settings::INI::GetSetting<bool>(Settings::INI::ENABLE_SPRINT_STAMINA_REDUCTION).value_or(false);
+		if (!installSprintCostHook)
+		{
+			logger::info("    > Skipped installing LightArmor sprint cost reduction hook"sv);
+			return;
+		}
+
 		auto hook = REL::Relocation<std::uintptr_t>(RE::Offset::Actor::UpdateSprinting, 0xCE);
 		REL::make_pattern<"0F 57 05">().match_or_fail(hook.address());
 
