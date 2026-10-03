@@ -6,7 +6,7 @@ namespace Utils
 	{
 		if (!target || !keyword) return;
 
-		const auto activeEffects = target->GetActiveEffectList();
+		const auto activeEffects = target->AsMagicTarget()->GetActiveEffectList();
 		if (activeEffects)
 		{
 			float maxElapsedTime = 0.0;

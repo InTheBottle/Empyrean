@@ -165,7 +165,7 @@ namespace Hooks
 				continue;
 			}
 
-			if (automaton->HasMagicEffect(activeUpgradeMagEff)) {
+			if (automaton->AsMagicTarget()->HasMagicEffect(activeUpgradeMagEff)) {
 				if (indexUpgrade >= ListSpawnUpgradeMagEffs->forms.size()) {
 					logger::info("  > Warning! An upgrade spawn magEff is missing from its list, won't be able to apply the upgrade"sv);
 					continue;

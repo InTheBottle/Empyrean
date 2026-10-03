@@ -22,13 +22,13 @@ namespace Hooks
 
 		if (isBloodRitualActive)
 		{
-			float curHP = a_player->As<RE::Actor>()->GetActorValue(RE::ActorValue::kHealth);
+			float curHP = a_player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kHealth);
 			float maxHP = a_player->As<RE::Actor>()->GetActorValueMax(RE::ActorValue::kHealth);
 			float maxMag = a_player->As<RE::Actor>()->GetActorValueMax(RE::ActorValue::kMagicka);
 
 			//Used for Blood to Power scaling
 			float missingHP = maxHP - curHP;
-			a_player->As<RE::ActorValueOwner>()->SetActorValue(RE::ActorValue::kFame, missingHP); 
+			a_player->AsActorValueOwner()->SetActorValue(RE::ActorValue::kFame, missingHP); 
 
 			//Update player HP based on max magicka
 			float hpModAmt = a_player->HasPerk(perkBloodMage2) ? maxMag : maxMag / 2.0;
@@ -37,7 +37,7 @@ namespace Hooks
 				float delta = hpModAmt - prevHPModAmt;
 				if (delta > 0.01 || delta < -0.01)
 				{
-					a_player->As<RE::ActorValueOwner>()->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kHealth, delta);
+					a_player->AsActorValueOwner()->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kHealth, delta);
 					gloPrevHPModAmt->value = prevHPModAmt + delta;
 					//logger::info("BloodMage - Updated HP"sv);
 					//logger::info("     > maxHP = {}, maxMag = {}"sv, maxHP, maxMag);
@@ -47,9 +47,9 @@ namespace Hooks
 		}
 		else
 		{
-			a_player->As<RE::ActorValueOwner>()->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kHealth, -prevHPModAmt);
+			a_player->AsActorValueOwner()->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kHealth, -prevHPModAmt);
 			gloPrevHPModAmt->value = 0.0;
-			a_player->As<RE::ActorValueOwner>()->SetActorValue(RE::ActorValue::kFame, 0.0); 
+			a_player->AsActorValueOwner()->SetActorValue(RE::ActorValue::kFame, 0.0); 
 		}
 	}
 }

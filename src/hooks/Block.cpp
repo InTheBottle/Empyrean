@@ -81,7 +81,7 @@ namespace Hooks
 		if (!victim->HasPerk(perkRebound)) return;
 
 		//logger::info("Rebound: physicalDamage={}, totalDamage={} ", a_hitData->physicalDamage, a_hitData->totalDamage);
-		aggressor->DamageActorValue(RE::ActorValue::kHealth, a_hitData->physicalDamage * 0.1);
+		aggressor->AsActorValueOwner()->DamageActorValue(RE::ActorValue::kHealth, a_hitData->physicalDamage * 0.1);
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -143,10 +143,10 @@ namespace Hooks
 	{
 		if (!a_actor) return false;
 
-		if (a_actor && (a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash ||
-			a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kSwing ||
-			a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kHit ||
-			a_actor->GetAttackState() == RE::ATTACK_STATE_ENUM::kFollowThrough)) {
+		if (a_actor && (a_actor->AsActorState()->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash ||
+			a_actor->AsActorState()->GetAttackState() == RE::ATTACK_STATE_ENUM::kSwing ||
+			a_actor->AsActorState()->GetAttackState() == RE::ATTACK_STATE_ENUM::kHit ||
+			a_actor->AsActorState()->GetAttackState() == RE::ATTACK_STATE_ENUM::kFollowThrough)) {
 			//logger::info("  > In bash/attack state...");
 			if (a_actor->IsPlayerRef() && a_actor->HasPerk(perkDeflectArrows) && !RE::Offset::getEquippedShield(a_actor)) {
 				//logger::info("  > Trying to destroy arrow...");
@@ -182,7 +182,7 @@ namespace Hooks
 			if (refrA && refrA->formType == RE::FormType::ActorCharacter)
 			{
 				auto* actorA = refrA->As<RE::Actor>();
-				if (actorA && actorA->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
+				if (actorA && actorA->AsActorState()->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
 					if (refrA->IsPlayerRef() && actorA->HasPerk(perkMirrorWall) && Utils::ArmorUtils::HasEquippedLightShield(actorA)) {
 						//logger::info(" > A: Trying to parry projectile...");
 						return processProjectileParry(actorA, a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableB));
@@ -193,7 +193,7 @@ namespace Hooks
 			if (refrB && refrB->formType == RE::FormType::ActorCharacter)
 			{
 				auto* actorB = refrB->As<RE::Actor>();
-				if (actorB && actorB->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
+				if (actorB && actorB->AsActorState()->GetAttackState() == RE::ATTACK_STATE_ENUM::kBash) {
 					if (refrB->IsPlayerRef() && actorB->HasPerk(perkMirrorWall) && Utils::ArmorUtils::HasEquippedLightShield(actorB)) {
 						//logger::info(" > B: Trying to parry projectile...");
 						return processProjectileParry(actorB, a_projectile, const_cast<RE::hkpCollidable*>(hit.rootCollidableA));

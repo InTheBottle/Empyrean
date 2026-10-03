@@ -16,7 +16,7 @@ namespace Hooks
 	void Unarmed::ProcessCombatHit(RE::Actor* a_this, RE::HitData* a_hitData)
 	{
 		const auto aggressor = a_hitData->aggressor.get();
-		if (!aggressor || !aggressor->GetIsPlayerOwner())
+		if (!aggressor || !aggressor->AsActorValueOwner()->GetIsPlayerOwner())
 			return;
 
 		if (!a_hitData->weapon || !a_hitData->weapon->IsHandToHandMelee())

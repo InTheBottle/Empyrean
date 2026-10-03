@@ -32,11 +32,11 @@ namespace Hooks
 		auto SkillXPLightAmorSprintMult = Settings::INI::GetSetting<float>(Settings::INI::SKILL_XP_LIGHTARMOR_SPRINT_MULT).value_or(0.0);
 		//logger::info("  {}, {}, {}, {}"sv, SkillXPLightAmorBaseRate, SkillXPLightAmorGearCountAdd, SkillXPLightAmorCombatMult, SkillXPLightAmorSprintMult);
 
-		if (a_player->IsSprinting() || a_player->IsRunning()) {
+		if (a_player->AsActorState()->IsSprinting() || a_player->IsRunning()) {
 			float baseRate = SkillXPLightAmorBaseRate;
 			float armorCountAdd = SkillXPLightAmorGearCountAdd * (armorCount - 2);
 			float combatMult = a_player->IsInCombat() ? SkillXPLightAmorCombatMult : 0.0f;
-			float sprintMult = a_player->IsSprinting() ? SkillXPLightAmorSprintMult : 1.0f;
+			float sprintMult = a_player->AsActorState()->IsSprinting() ? SkillXPLightAmorSprintMult : 1.0f;
 			float skillUse = a_delta * (baseRate + armorCountAdd) * combatMult * sprintMult;
 			a_player->AddSkillExperience(RE::ActorValue::kLightArmor, skillUse);
 		}

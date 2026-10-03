@@ -48,7 +48,7 @@ namespace Hooks
 		bool wasPowerAttack = a_hitData->flags.all(RE::HitData::Flag::kPowerAttack);
 		auto activeBleedEffs = std::vector<RE::ActiveEffect*>{};
 
-		const auto activeEffects = victim->GetActiveEffectList();
+		const auto activeEffects = victim->AsMagicTarget()->GetActiveEffectList();
 		if (!activeEffects)
 		{
 			//logger::info("AThousandCuts - No active magicEffects found, aborting..."sv);
@@ -135,7 +135,7 @@ namespace Hooks
 				aggressor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)->CastSpellImmediate(SpellBleedOut, false, victim->As<RE::Actor>(), 1.0f, false, 0.0f, aggressor->As<RE::Actor>());
 			
 				//Deal remaning bleeding damage to HP
-				victim->DamageActorValue(RE::ActorValue::kHealth, totalDmg);
+				victim->AsActorValueOwner()->DamageActorValue(RE::ActorValue::kHealth, totalDmg);
 			}
 			
 		}
