@@ -7,24 +7,92 @@
     },
   "configurePresets": [
     {
-      "name": "ALL",
-      "generator": "Visual Studio 17 2022",
-      "toolset": "v143",
-      "binaryDir": "${sourceDir}/build",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "name": "cmake-dev",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
-        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}",
+        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}"
+      }
+    },
+    {
+      "name": "vcpkg",
+      "hidden": true,
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/cmake/ports/"
+      }
+    },
+    {
+      "name": "windows",
+      "hidden": true,
+      "cacheVariables": {
         "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>",
         "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+      }
+    },
+    {
+      "name": "vs2022",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "toolset": "v143"
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "FULL_RELEASE": true,
+        "COPY_BSA": true,
+        "COPY_PSC": true
+      }
+    },
+    {
+      "name": "test",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build-test",
+      "cacheVariables": {
+        "COPY_PEX": true,
+        "COPY_BSA": true,
+        "COPY_PSC": true
+      }
+    },
+    {
+      "name": "vs2022-windows-vcpkg-release",
+      "inherits": [
+        "cmake-dev",
+        "vcpkg",
+        "windows",
+        "vs2022",
+        "release"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "vs2022-windows-vcpkg-test",
+      "inherits": [
+        "cmake-dev",
+        "vcpkg",
+        "windows",
+        "vs2022",
+        "test"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     }
   ],
     "buildPresets": [
         {
             "name": "Release",
-            "configurePreset": "ALL",
+            "configurePreset": "vs2022-windows-vcpkg-release",
             "configuration": "Release"
+        },
+        {
+            "name": "Test",
+            "configurePreset": "vs2022-windows-vcpkg-test",
+            "configuration": "Debug"
         }
     ]
 }
