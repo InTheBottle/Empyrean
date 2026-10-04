@@ -2,6 +2,54 @@
 
 namespace Data
 {
+	namespace
+	{
+		class InitialPropertyValues
+		{
+		public:
+			using Map = RE::BSTScrapHashMap<RE::BSFixedString, RE::BSScript::Variable>;
+
+			InitialPropertyValues() :
+				map()
+			{}
+
+			InitialPropertyValues(const InitialPropertyValues&) = delete;
+			InitialPropertyValues& operator=(const InitialPropertyValues&) = delete;
+
+			~InitialPropertyValues()
+			{
+				for (auto& property : map) {
+					std::destroy_at(std::addressof(property));
+				}
+
+				const auto table = reinterpret_cast<const Layout*>(std::addressof(map));
+				if (table->entries) {
+					table->heap->Deallocate(table->entries);
+				}
+			}
+
+			union
+			{
+				Map map;
+			};
+
+		private:
+			struct Layout
+			{
+				std::uint64_t  pad00;
+				std::uint32_t  pad08;
+				std::uint32_t  capacity;
+				std::uint32_t  free;
+				std::uint32_t  good;
+				const void*    sentinel;
+				RE::ScrapHeap* heap;
+				void*          entries;
+			};
+			static_assert(sizeof(Layout) == sizeof(Map));
+			static_assert(offsetof(Layout, heap) == 0x20);
+		};
+	}
+
 	bool ModObjectManager::PreLoad() {
 		logger::info("  >Looking for script {} on quest {}..."sv, ScriptName, QuestName);
 		const auto quest = RE::TESForm::LookupByEditorID<RE::TESQuest>(QuestName);
@@ -28,7 +76,8 @@ namespace Data
 		}
 
 		const auto handle = handlePolicy->GetHandleForObject(RE::TESQuest::FORMTYPE, quest);
-		RE::BSTScrapHashMap<RE::BSFixedString, RE::BSScript::Variable> properties;
+		InitialPropertyValues initialValues;
+		auto& properties = initialValues.map;
 		std::uint32_t nonConverted;
 		bindPolicy->GetInitialPropertyValues(handle, ScriptName, properties, nonConverted);
 		objects.clear();
