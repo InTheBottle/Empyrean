@@ -12,6 +12,6 @@ namespace Hooks
 		static void DamagePick(RE::LockpickingMenu* a_menu);
 		static inline REL::Relocation<decltype(&DamagePick)> _damagePick;
 
-		static inline RE::BGSPerk* perkRememberLockpickAngle;
+		static inline RE::BGSPerk* perkTrialAndError;
 	};
 }

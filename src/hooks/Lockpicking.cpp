@@ -24,7 +24,7 @@ namespace Hooks
 
 	void Lockpicking::LoadData()
 	{
-		perkRememberLockpickAngle = Data::ModObject<RE::BGSPerk>("PerkRememberLockpickAngle"sv);
+		perkTrialAndError = Data::ModObject<RE::BGSPerk>("PerkTrialAndError"sv);
 	}
 
 	void Lockpicking::DamagePick(RE::LockpickingMenu* a_menu)
@@ -34,7 +34,7 @@ namespace Hooks
 		_damagePick(a_menu);
 
 		const auto player = RE::PlayerCharacter::GetSingleton();
-		if (perkRememberLockpickAngle && player && player->HasPerk(perkRememberLockpickAngle)) {
+		if (perkTrialAndError && player && player->HasPerk(perkTrialAndError)) {
 			a_menu->GetRuntimeData().pickAngle = pickAngle;
 		}
 	}

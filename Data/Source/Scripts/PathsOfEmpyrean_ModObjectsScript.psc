@@ -16,7 +16,7 @@ Perk Property PerkDaringFingersmith2 Auto
 Formlist Property ListRacesAllowPickpocketRank1 Auto
 Keyword Property KeywordRaceAllowPickpocketRank1 Auto
 
-Perk Property PerkRememberLockpickAngle Auto
+Perk Property PerkTrialAndError Auto
 
 Perk Property PerkBloodMage1 Auto
 Perk Property PerkBloodMage2 Auto
