@@ -9,6 +9,7 @@
 #include "Hooks/Destruction.h"
 #include "Hooks/Smithing.h"
 #include "hooks/Block.h"
+#include "Hooks/Lockpicking.h"
 
 static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 {
@@ -25,6 +26,7 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 		//Hooks::ProcessSpellsForPatching();
 		Hooks::Smithing::LoadData();
 		Hooks::Block::LoadData();
+		Hooks::Lockpicking::LoadData();
 
 		SECTION_SEPARATOR;
 		logger::info("Finished startup tasks, enjoy your game!"sv);

@@ -8,6 +8,7 @@
 #include "TwoHanded.h"
 #include "Destruction.h"
 #include "Block.h"
+#include "Lockpicking.h"
 
 #include "RE/Offset.h"
 #include <xbyak/xbyak.h>
@@ -27,6 +28,7 @@ namespace Hooks {
 		result &= Pickpocket::InstallHooks();
 		result &= Alteration::InstallHooks();
 		result &= Block::InstallHooks();
+		result &= Lockpicking::InstallHooks();
 
 		logger::info("Finished installing hooks."sv);
 		return result;
