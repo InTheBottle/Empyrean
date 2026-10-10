@@ -42,10 +42,52 @@ namespace Hooks
 
 			REL::Relocation<std::uintptr_t> getAssociatedResource{ RELOCATION_ID(33817, 34609) };
 			SKSE::GetTrampoline().write_branch<5>(getAssociatedResource.address(), &GetAssociatedResource);
+			REL::Relocation<std::uintptr_t> getAssociatedResourceReason{ RELOCATION_ID(33818, 34610) };
+			SKSE::GetTrampoline().write_branch<5>(getAssociatedResourceReason.address(), &GetAssociatedResourceReason);
 			logger::info("    > Installed hooks for BloodRitual"sv);
+
+			if (REL::Module::IsVR()) {
+				logger::info("    > BloodRitual cast failure message hook is not available on VR, skipping"sv);
+			}
+			else {
+				InstallCastFailureHook(RELOCATION_ID(33355, 34136), 0x51);
+				InstallCastFailureHook(RELOCATION_ID(33358, 34139), 0xB9);
+			}
 		}
 
 		return true;
+	}
+
+	void Alteration::InstallCastFailureHook(REL::RelocationID a_function, std::ptrdiff_t a_offset)
+	{
+		REL::Relocation<std::uintptr_t> target{ a_function, a_offset };
+		if (!util::is_call_site(target.address())) {
+			logger::error("    > BloodRitual cast failure hook did not find a call at {:#x}, skipping"sv, target.address());
+			return;
+		}
+		_CastFailure = SKSE::GetTrampoline().write_call<5>(target.address(), &CastFailure);
+		logger::info("    > Installed BloodRitual cast failure hook at {:#x}"sv, target.address());
+	}
+
+	void Alteration::CastFailure(RE::ActorMagicCaster* a_caster, RE::MagicSystem::CannotCastReason a_reason)
+	{
+		if (a_reason == RE::MagicSystem::CannotCastReason::kMagicka && a_caster && UsesHealthForMagicka(a_caster->actor, a_caster->currentSpell)) {
+			_CastFailure(a_caster, RE::MagicSystem::CannotCastReason::kOK);
+			RE::HUDMenu::FlashMeter(RE::ActorValue::kHealth);
+			RE::SendHUDMessage::ShowHUDMessage(NotEnoughHealthText().c_str(), nullptr, true);
+			return;
+		}
+
+		_CastFailure(a_caster, a_reason);
+	}
+
+	std::string Alteration::NotEnoughHealthText()
+	{
+		std::string text;
+		if (!SKSE::Translation::Translate("$PoENotEnoughHealth", text) || text.empty() || text.starts_with('$')) {
+			text = "You don't have enough Health";
+		}
+		return text;
 	}
 
 	bool Alteration::UsesHealthForMagicka(RE::Actor* a_actor, RE::MagicItem* a_spell)
@@ -73,6 +115,20 @@ namespace Hooks
 			return a_source == RE::MagicSystem::CastingSource::kLeftHand ? RE::ActorValue::kLeftItemCharge : RE::ActorValue::kRightItemCharge;
 		default:
 			return RE::ActorValue::kNone;
+		}
+	}
+
+	RE::MagicSystem::CannotCastReason Alteration::GetAssociatedResourceReason(RE::MagicItem* a_item, RE::MagicSystem::CastingSource a_source)
+	{
+		switch (GetAssociatedResource(a_item, a_source)) {
+		case RE::ActorValue::kMagicka:
+		case RE::ActorValue::kHealth:
+			return RE::MagicSystem::CannotCastReason::kMagicka;
+		case RE::ActorValue::kLeftItemCharge:
+		case RE::ActorValue::kRightItemCharge:
+			return RE::MagicSystem::CannotCastReason::kItemCharge;
+		default:
+			return RE::MagicSystem::CannotCastReason::kOK;
 		}
 	}
 
