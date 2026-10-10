@@ -60,8 +60,9 @@ namespace Settings
 		inline static constexpr const char* ENABLE_BASH_DESTROY_ARROW = "Block|bEnableBashDestroyArrow";
 		inline static constexpr const char* SKILL_XP_BLOCK_REFLECT_SPELL = "Block|fSkillXPBlockReflectSpell";
 		inline static constexpr const char* SKILL_XP_BLOCK_DESTROY_ARROW = "Block|fSkillXPBlockDestroyArrow";
+		inline static constexpr const char* ENABLE_BLOOD_RITUAL_HEALTH_CASTING = "Alteration|bEnableBloodRitualHealthCasting";
 
-		inline static constexpr const std::uint8_t EXPECTED_COUNT = 14;
+		inline static constexpr const std::uint8_t EXPECTED_COUNT = 15;
 
 		inline static constexpr const std::array<const char*, EXPECTED_COUNT> EXPECTED_SETTINGS = {
 			ENABLE_LIGHTARMOR_PASSIVE_XP,
@@ -77,7 +78,8 @@ namespace Settings
 			ENABLE_BASH_SPELL_REFLECTION,
 			SKILL_XP_BLOCK_REFLECT_SPELL,
 			ENABLE_BASH_DESTROY_ARROW,
-			SKILL_XP_BLOCK_DESTROY_ARROW
+			SKILL_XP_BLOCK_DESTROY_ARROW,
+			ENABLE_BLOOD_RITUAL_HEALTH_CASTING
 		};
 
 		template <typename T>
