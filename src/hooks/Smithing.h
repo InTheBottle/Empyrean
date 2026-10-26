@@ -7,6 +7,7 @@ namespace Hooks
 	public:
 		static void LoadData();
 		static bool CreateStasisCubeFromAutomaton(RE::Actor* automaton);
+		static void FixAutomatonPotionsInContainer(RE::TESObjectREFR* contRef);
 	private:
 		static void CreatePotionFromEffects(RE::EffectSetting* mainSpawnMagEff, RE::BSTArray<RE::Effect> effects, std::string modelName, float weight);
 		static inline RE::BGSKeyword* KeywordCraftingAutomaton;
