@@ -205,8 +205,11 @@ namespace Hooks
 		}
 		else
 		{
-			a_player->AsActorValueOwner()->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kHealth, -prevHPModAmt);
-			gloPrevHPModAmt->value = 0.0;
+			if (prevHPModAmt != 0.0f)
+			{
+				a_player->AsActorValueOwner()->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, RE::ActorValue::kHealth, -prevHPModAmt);
+				gloPrevHPModAmt->value = 0.0;
+			}
 			a_player->AsActorValueOwner()->SetActorValue(RE::ActorValue::kFame, 0.0); 
 		}
 	}
