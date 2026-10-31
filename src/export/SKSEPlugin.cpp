@@ -11,6 +11,7 @@
 #include "hooks/Block.h"
 #include "Hooks/Lockpicking.h"
 #include "Hooks/LocationalDamage.h"
+#include "LeveledList/LeveledList.h"
 
 static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 {
@@ -29,6 +30,9 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 		Hooks::Block::LoadData();
 		Hooks::Lockpicking::LoadData();
 		Hooks::LocationalDamage::LoadData();
+
+		SECTION_SEPARATOR;
+		LeveledList::Load();
 
 		SECTION_SEPARATOR;
 		logger::info("Finished startup tasks, enjoy your game!"sv);
