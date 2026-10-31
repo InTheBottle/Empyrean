@@ -87,7 +87,7 @@ namespace NPCTemplate
         {
             const auto delimiter = a_token.find('|');
             if (delimiter == std::string_view::npos) {
-                return RE::TESForm::LookupByEditorID(a_token);
+                return RE::TESForm::LookupByEditorID(std::string(a_token));  // the key is read as a c string, so it needs its own terminator
             }
 
             const auto dataHandler = RE::TESDataHandler::GetSingleton();
