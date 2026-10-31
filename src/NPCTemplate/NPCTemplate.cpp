@@ -87,7 +87,7 @@ namespace NPCTemplate
         {
             const auto delimiter = a_token.find('|');
             if (delimiter == std::string_view::npos) {
-                return RE::TESForm::LookupByEditorID(a_token);
+                return RE::TESForm::LookupByEditorID(std::string(a_token));  // the key is read as a c string, so it needs its own terminator
             }
 
             const auto dataHandler = RE::TESDataHandler::GetSingleton();
@@ -102,7 +102,8 @@ namespace NPCTemplate
 
             if (file->IsLight()) {
                 rawID &= 0xFFF;
-            } else {
+            }
+            else {
                 rawID &= 0xFFFFFF;
             }
             return dataHandler->LookupForm(rawID, modName);
@@ -128,7 +129,8 @@ namespace NPCTemplate
                 if (a_set) {
                     masks.set |= bit;
                     masks.clear &= inverse;
-                } else {
+                }
+                else {
                     masks.clear |= bit;
                     masks.set &= inverse;
                 }
@@ -235,11 +237,14 @@ namespace NPCTemplate
             std::vector<Flag> flags;
             if ((!set && opKey != "removeTemplateFlags"sv) || !ParseFlags(line.substr(opEquals + 1), flags)) {
                 logger::warn("  >Unsupported key or flag: {}"sv, line);
-            } else if (filterKey == "filterByNpcs"sv) {
+            }
+            else if (filterKey == "filterByNpcs"sv) {
                 ApplyByNpcs(filterValue, set, flags);
-            } else if (filterKey == "filterByEditorIdContains"sv) {
+            }
+            else if (filterKey == "filterByEditorIdContains"sv) {
                 ApplyByEditorId(filterValue, set, flags);
-            } else {
+            }
+            else {
                 logger::warn("  >Unsupported filter {}: {}"sv, filterKey, line);
             }
         }

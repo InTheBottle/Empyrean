@@ -74,7 +74,7 @@ namespace LeveledList
         {
             const auto delimiter = a_token.find('|');
             if (delimiter == std::string_view::npos) {
-                return RE::TESForm::LookupByEditorID(a_token);
+                return RE::TESForm::LookupByEditorID(std::string(a_token));
             }
 
             const auto dataHandler = RE::TESDataHandler::GetSingleton();
