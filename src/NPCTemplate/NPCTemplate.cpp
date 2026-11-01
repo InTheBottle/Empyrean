@@ -1,8 +1,8 @@
 #include "NPCTemplate.h"
 
+#include "Utils/IniUtils.h"
+
 #include <array>
-#include <charconv>
-#include <filesystem>
 #include <unordered_map>
 
 namespace NPCTemplate
@@ -10,6 +10,11 @@ namespace NPCTemplate
     namespace
     {
         using Flag = RE::ACTOR_BASE_DATA::TEMPLATE_USE_FLAG;
+        using IniUtils::ResolveForm;
+        using IniUtils::Split;
+        using IniUtils::Trim;
+        using SKSE::stl::string::icontains;
+        using SKSE::stl::string::iequals;
 
         struct Masks
         {
@@ -36,83 +41,33 @@ namespace NPCTemplate
             { "keywords"sv, Flag::kKeywords }
         } };
 
-        std::string_view Trim(std::string_view a_text)
+        const Flag* FindFlag(std::string_view a_name)
         {
-            while (!a_text.empty() && std::isspace(static_cast<unsigned char>(a_text.front()))) {
-                a_text.remove_prefix(1);
-            }
-            while (!a_text.empty() && std::isspace(static_cast<unsigned char>(a_text.back()))) {
-                a_text.remove_suffix(1);
-            }
-            return a_text;
-        }
-
-        std::vector<std::string_view> Split(std::string_view a_text, char a_delimiter)
-        {
-            std::vector<std::string_view> parts;
-            while (true) {
-                const auto position = a_text.find(a_delimiter);
-                parts.push_back(Trim(a_text.substr(0, position)));
-                if (position == std::string_view::npos) {
-                    break;
+            for (const auto& [name, flag] : FlagNames) {
+                if (iequals(name, a_name)) {
+                    return &flag;
                 }
-                a_text.remove_prefix(position + 1);
             }
-            return parts;
-        }
-
-        std::string Lower(std::string_view a_text)
-        {
-            std::string result(a_text);
-            for (auto& character : result) {
-                character = static_cast<char>(util::ascii_tolower(character));
-            }
-            return result;
+            return nullptr;
         }
 
         bool ParseFlags(std::string_view a_text, std::vector<Flag>& a_flags)
         {
             for (const auto token : Split(a_text, ',')) {
-                const auto name = Lower(token);
-                const auto found = std::ranges::find(FlagNames, std::string_view{ name }, &decltype(FlagNames)::value_type::first);
-                if (found == FlagNames.end()) {
+                const auto* flag = FindFlag(token);
+                if (!flag) {
                     return false;
                 }
-                a_flags.push_back(found->second);
+                a_flags.push_back(*flag);
             }
             return true;
         }
 
-        RE::TESForm* ResolveForm(std::string_view a_token)
+        // an empty needle never matches
+        bool ContainsAll(std::string_view a_editorID, const std::vector<std::string_view>& a_needles)
         {
-            const auto delimiter = a_token.find('|');
-            if (delimiter == std::string_view::npos) {
-                return RE::TESForm::LookupByEditorID(std::string(a_token));  // the key is read as a c string, so it needs its own terminator
-            }
-
-            const auto dataHandler = RE::TESDataHandler::GetSingleton();
-            const auto modName = a_token.substr(0, delimiter);
-            const auto id = a_token.substr(delimiter + 1);
-            const auto file = dataHandler->LookupModByName(modName);
-            RE::FormID rawID = 0;
-            const auto [pointer, error] = std::from_chars(id.data(), id.data() + id.size(), rawID, 16);
-            if (!file || error != std::errc{} || pointer != id.data() + id.size()) {
-                return nullptr;
-            }
-
-            if (file->IsLight()) {
-                rawID &= 0xFFF;
-            }
-            else {
-                rawID &= 0xFFFFFF;
-            }
-            return dataHandler->LookupForm(rawID, modName);
-        }
-
-        bool ContainsAll(const std::string& a_editorID, const std::vector<std::string>& a_needles)
-        {
-            for (const auto& needle : a_needles) {
-                if (needle.empty() || a_editorID.find(needle) == std::string::npos) {
+            for (const auto needle : a_needles) {
+                if (!icontains(a_editorID, needle)) {
                     return false;
                 }
             }
@@ -191,10 +146,7 @@ namespace NPCTemplate
 
         void ApplyByEditorId(std::string_view a_value, bool a_set, const std::vector<Flag>& a_flags)
         {
-            std::vector<std::string> needles;
-            for (const auto token : Split(a_value, ',')) {
-                needles.push_back(Lower(token));
-            }
+            const auto needles = Split(a_value, ',');
 
             // GetFormEditorID() is empty for npcs, the lookup map is what po3 Tweaks fills
             std::size_t matched = 0;
@@ -206,7 +158,7 @@ namespace NPCTemplate
                 }
 
                 auto* npc = entry.second->As<RE::TESNPC>();
-                if (npc->baseTemplateForm && ContainsAll(Lower(entry.first.c_str()), needles)) {
+                if (npc->baseTemplateForm && ContainsAll(entry.first.c_str(), needles)) {
                     Apply(npc, a_set, a_flags);
                     ++matched;
                 }
@@ -248,40 +200,12 @@ namespace NPCTemplate
                 logger::warn("  >Unsupported filter {}: {}"sv, filterKey, line);
             }
         }
-
-        bool IsFileActive(const std::filesystem::path& a_path)
-        {
-            const auto stem = a_path.stem();
-            const auto extension = Lower(stem.extension().string());
-            if (extension != ".esp" && extension != ".esl" && extension != ".esm") {
-                return true;
-            }
-            return RE::TESDataHandler::GetSingleton()->LookupModByName(stem.string()) != nullptr;
-        }
     }
 
     void Load()
     {
         logger::info("Applying npc template flags..."sv);
-
-        std::error_code error;
-        const std::filesystem::path folder{ FolderPath };
-        std::vector<std::filesystem::path> files;
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(folder, error)) {
-            if (entry.is_regular_file() && entry.path().extension() == ".ini" && IsFileActive(entry.path())) {
-                files.push_back(entry.path());
-            }
-        }
-        std::ranges::sort(files);
-
-        for (const auto& path : files) {
-            logger::info("  >Reading {}"sv, path.filename().string());
-            std::ifstream file(path);
-            std::string line;
-            while (std::getline(file, line)) {
-                ProcessLine(line);
-            }
-        }
+        IniUtils::ForEachLine(FolderPath, &ProcessLine);
 
         if (!patched.empty()) {
             REL::Relocation<std::uintptr_t> vtbl{ RE::VTABLE_Character[0] };
