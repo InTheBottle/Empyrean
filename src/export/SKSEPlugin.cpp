@@ -13,6 +13,8 @@
 #include "Hooks/LocationalDamage.h"
 #include "LeveledList/LeveledList.h"
 #include "NPCTemplate/NPCTemplate.h"
+#include "FormList/FormList.h"
+#include "Weapon/Weapon.h"
 
 static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 {
@@ -37,6 +39,12 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 
 		SECTION_SEPARATOR;
 		NPCTemplate::Load();
+
+		SECTION_SEPARATOR;
+		FormList::Load();
+
+		SECTION_SEPARATOR;
+		Weapon::Load();
 
 		SECTION_SEPARATOR;
 		logger::info("Finished startup tasks, enjoy your game!"sv);
