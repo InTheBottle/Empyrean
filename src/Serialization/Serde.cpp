@@ -41,7 +41,7 @@ namespace Serialization {
 			logger::critical("  >Failed to get internal serialization manager."sv);
 			return;
 		}
-		serdeManager->Save(a_intfc);
+		serdeManager->Revert(a_intfc);
 		logger::info("  >Revert done."sv);
 	}
 }

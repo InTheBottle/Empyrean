@@ -10,6 +10,7 @@
 #include "Block.h"
 #include "Lockpicking.h"
 #include "LocationalDamage.h"
+#include "Masterwork.h"
 
 #include "RE/Offset.h"
 #include <xbyak/xbyak.h>
@@ -31,6 +32,7 @@ namespace Hooks {
 		result &= Block::InstallHooks();
 		result &= Lockpicking::InstallHooks();
 		result &= LocationalDamage::InstallHooks();
+		result &= Masterwork::InstallHooks();
 
 		logger::info("Finished installing hooks."sv);
 		return result;
