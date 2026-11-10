@@ -11,6 +11,9 @@
 #include "hooks/Block.h"
 #include "Hooks/Lockpicking.h"
 #include "Hooks/LocationalDamage.h"
+#include "Hooks/Masterwork.h"
+#include "Data/RecipeGenerator.h"
+#include "Serialization/SerializationManager/SerializationManager.h"
 #include "LeveledList/LeveledList.h"
 #include "NPCTemplate/NPCTemplate.h"
 #include "FormList/FormList.h"
@@ -33,6 +36,10 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 		Hooks::Block::LoadData();
 		Hooks::Lockpicking::LoadData();
 		Hooks::LocationalDamage::LoadData();
+		Hooks::Masterwork::LoadData();
+
+		SECTION_SEPARATOR;
+		Data::RecipeGenerator::Run();
 
 		SECTION_SEPARATOR;
 		LeveledList::Load();
@@ -54,6 +61,7 @@ static void MessageEventCallback(SKSE::MessagingInterface::Message* a_msg)
 		SECTION_SEPARATOR;
 		logger::info("Post Load Game"sv);
 		Hooks::Smithing::FixAutomatonPotionsInContainer(RE::PlayerCharacter::GetSingleton());
+		Hooks::Masterwork::OnPostLoadGame();
 		break;
 
 	default:
@@ -70,7 +78,7 @@ SKSEPluginInfo(
 
 SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 {
-	SKSE::Init(a_skse, { .trampoline = true, .trampolineSize = 285 });
+	SKSE::Init(a_skse, { .trampoline = true, .trampolineSize = 453 });
 	logger::info("Author: Steelfeathers & SeaSparrow"sv);
 	logger::info("Runtime: {} ({})"sv, REL::Module::get().version().string(), REL::Module::IsVR() ? "VR"sv : REL::Module::IsAE() ? "AE"sv : "SE"sv);
 	SECTION_SEPARATOR;
@@ -101,6 +109,7 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 	serialization->SetSaveCallback(&Serialization::SaveCallback);
 	serialization->SetLoadCallback(&Serialization::LoadCallback);
 	serialization->SetRevertCallback(&Serialization::RevertCallback);
+	Serialization::SerializationManager::ObjectManager::GetSingleton()->RegisterObject(Hooks::Masterwork::GetSingleton(), Hooks::Masterwork::RecordType);
 	logger::info("  >Registered necessary functions."sv);
 	SECTION_SEPARATOR;
 
