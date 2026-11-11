@@ -603,7 +603,10 @@ namespace Hooks
 
         auto result = _TemperedValue(a_value, a_temper);
         if (GetMark(list, nullptr) == Type::kQuality) {
-            result *= QualityValueMult;
+            result = (result * QualityValueMult) + QualityValueAdd;
+        }
+        else if (GetMark(list, nullptr) == Type::kMasterwork) {
+            result = (result * MasterworkValueMult) + MasterworkValueAdd;
         }
         return result;
     }

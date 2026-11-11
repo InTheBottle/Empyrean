@@ -83,8 +83,11 @@ namespace Hooks
 
         inline static constexpr float MasterworkTemperMult = 1.5f;
         inline static constexpr float MasterworkEnchantMult = 1.25f;
+        inline static constexpr float MasterworkValueMult = 1.15f;
+        inline static constexpr float MasterworkValueAdd = 50.0f;
         inline static constexpr float QualityEnchantMult = 1.2f;
-        inline static constexpr float QualityValueMult = 10.0f;
+        inline static constexpr float QualityValueMult = 1.35f;
+        inline static constexpr float QualityValueAdd = 22.0f;
 
         inline static RE::BGSKeyword* MasterworkExclude;
         inline static RE::BGSKeyword* TailorExclude;
